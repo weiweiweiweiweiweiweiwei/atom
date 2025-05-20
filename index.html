@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>原子習慣數位教材</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1a73e8; /* Google Blue */
+            --secondary-color: #f1f3f4; /* Google Light Grey */
+            --text-color: #202124; /* Google Dark Grey / Black */
+            --text-color-light: #5f6368; /* Google Medium Grey */
+            --border-color: #dadce0;
+            --sidebar-width: 280px;
+            --sidebar-width-collapsed: 0px; /* Can be non-zero if you want icons */
+            --header-height: 60px;
+            --transition-speed: 0.3s;
+            --chat-fab-size: 56px;
+            --chat-popup-width: 360px;
+            --chat-popup-height: 80%;
+            --chat-popup-max-height: 600px;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #fff;
+            color: var(--text-color);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--secondary-color);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            transition: width var(--transition-speed) ease, transform var(--transition-speed) ease,
+                        margin-left var(--transition-speed) ease;
+            flex-shrink: 0;
+            position: fixed;
+            left: calc(-1 * var(--sidebar-width));
+            top: 0;
+            bottom: 0;
+            z-index: 1000;
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar-header {
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            min-height: var(--header-height);
+            box-sizing: border-box;
+        }
+
+        .logo {
+            height: 30px;
+            width: 30px;
+            margin-right: 12px;
+            object-fit: contain;
+        }
+
+        .sidebar-title {
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin: 0;
+            color: var(--text-color);
+            flex-grow: 1;
+        }
+
+        .course-navigation .unit {
+            margin-bottom: 8px;
+        }
+
+        .course-navigation .unit-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+            background-color: transparent;
+            width: 100%;
+            text-align: left;
+            border: none;
+            font-size: 0.95rem;
+            color: var(--text-color);
+            text-decoration: none; /* For <a> styled as button */
+        }
+
+        .course-navigation .unit-title:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+
+        .course-navigation .unit-title .material-icons {
+            transition: transform var(--transition-speed) ease;
+        }
+        
+        .course-navigation .unit-title.no-lessons { /* Style for direct link unit titles */
+            display: block; /* Make it behave like a link */
+        }
+
+        .course-navigation .unit.expanded .unit-title .material-icons {
+            transform: rotate(90deg);
+        }
+
+        .course-navigation .lessons-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height var(--transition-speed) ease-in-out;
+        }
+
+        /* .course-navigation .unit.expanded .lessons-list {
+           max-height set by JS
+        } */
+
+        .course-navigation .lesson-item { /* Applied to <a> tags now */
+            display: block;
+            padding: 10px 16px 10px 32px;
+            color: var(--text-color-light);
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .course-navigation .unit-title.lesson-item { /* For 'no-lessons' unit titles also acting as nav items */
+             padding: 12px 16px; /* Match unit-title padding */
+        }
+
+
+        .course-navigation .lesson-item:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+
+        .course-navigation .lesson-item.active {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 500;
+        }
+        .course-navigation .lesson-item.active:hover {
+            background-color: var(--primary-color); /* Keep active color on hover */
+        }
+
+
+        /* --- Main Content --- */
+        .main-content-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #fff;
+            transition: margin-left var(--transition-speed) ease;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .main-header {
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            height: var(--header-height);
+            border-bottom: 1px solid var(--border-color);
+            background-color: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+            flex-shrink: 0;
+        }
+
+        .current-lesson-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin-left: 16px;
+        }
+
+        /* ... (其他CSS規則保持不變) ... */
+
+        .content-scroll-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            /* 原 padding: 24px; */
+            /* 新 padding: 上下仍然是24px，左右調整為20px (你可以自行調整這個值) */
+            padding: 24px 20px; 
+            /* 如果只想調整左邊，可以這樣： */
+            /* padding: 24px 24px 24px 16px; */ /* 上 右 下 左 */
+            scroll-behavior: smooth;
+            /* 確保沒有會導致內部 section 居中的 flex 或 grid 屬性 */
+            /* display: flex; 和 align-items: center; 應該不在這裡 */
+        }
+
+        .content-scroll-container section[id^="unit-"],
+        .content-scroll-container section[id^="lesson-"] {
+            margin-bottom: 40px; 
+            scroll-margin-top: calc(var(--header-height) + 24px);
+            
+            /* 新增：設定內容區塊的最大寬度 */
+            max-width: 920px; /* 你可以調整這個最大寬度值，例如 800px, 960px 等 */
+            
+            /* 由於 section 是塊級元素，在 content-scroll-container 內會默認靠左。
+               如果之前 content-scroll-container 有 align-items: center; 
+               或 section 有 margin: 0 auto; 則需要移除/修改這些來確保靠左。
+               目前結構應該是默認靠左的。
+            */
+            margin-left: 0; /* 明確指定靠左 (通常是默認，但確保一下) */
+            margin-right: auto; /* 讓右邊自動填充剩餘空間，效果也是靠左 */
+            box-sizing: border-box; /* 確保 section 的 padding (如果有的話) 被包含在 max-width 內 */
+            /* 如果 section 內部還有自己的 padding，可以定義在這裡或保持其默認 */
+        }
+        
+        /* 如果 section 內部的 p, ul, ol 等也需要相對於 section 的邊緣有一些 padding，
+           確保它們的樣式正確，或者 section 本身也可以有內部的 padding。
+           例如，如果上面的 section[...] 直接設 padding: 0 16px; box-sizing: border-box; 
+           那 max-width 就是包含這部分padding的總寬度。
+           現在的設置是讓 section 的背景延伸到 max-width，文字直接在裡面。
+           一般文章的 p, ul 等元素本身就會有 margin，可能不需要 section 的額外 padding。
+           目前 .content-scroll-container section p, ul, ol 的 padding-left: 20px 是針對列表的，這應該沒問題。
+        */
+
+
+        /* ... (其他CSS規則保持不變) ... */
+        
+        /* Titles within the scrollable content */
+        .content-scroll-container section h1 { /* For "總結" title */
+            font-size: 2rem;
+            font-weight: 500;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 24px;
+        }
+
+        .content-scroll-container section h2 { /* Unit title within content, or first lesson title */
+            font-size: 1.8rem;
+            font-weight: 500;
+            color: var(--text-color); /* Make distinct from sidebar active, or match primary */
+             /* border-bottom: 1px solid var(--border-color); */
+            padding-bottom: 8px;
+            margin-top: 0; /* For first h2 in a section */
+            margin-bottom: 20px;
+        }
+        /* This is for titles that were in courseData.lessons.title if those become h2 or h3 */
+        .content-scroll-container section h3 { /* Sub-headings within a lesson's content */
+            font-size: 1.4rem;
+            font-weight: 500;
+            margin-top: 28px;
+            margin-bottom: 14px;
+        }
+
+        .content-scroll-container section p,
+        .content-scroll-container section ul,
+        .content-scroll-container section ol {
+            line-height: 1.7;
+            margin-bottom: 16px;
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+        .content-scroll-container section ul,
+        .content-scroll-container section ol {
+            padding-left: 20px;
+        }
+        .content-scroll-container section li {
+            margin-bottom: 8px;
+        }
+
+        /* --- Icon Buttons --- */
+        .icon-button {
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .icon-button .material-icons {
+            color: var(--text-color-light);
+        }
+        .icon-button:hover {
+            background-color: rgba(0,0,0,0.08);
+        }
+
+        .mobile-only {
+            display: inline-flex;
+        }
+        .desktop-only {
+            display: none;
+        }
+
+        /* --- Chatbase FAB and Popup --- */
+        .chatbase-fab {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: var(--chat-fab-size);
+            height: var(--chat-fab-size);
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 1050;
+            transition: transform var(--transition-speed) ease;
+        }
+        .chatbase-fab:hover {
+            transform: scale(1.1);
+        }
+        .chatbase-fab .material-icons {
+            font-size: 24px;
+        }
+
+        .chatbase-popup {
+            position: fixed;
+            bottom: calc(var(--chat-fab-size) + 32px);
+            right: 24px;
+            width: var(--chat-popup-width);
+            height: var(--chat-popup-height);
+            max-height: var(--chat-popup-max-height);
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1040;
+            transform: translateY(20px) scale(0.95);
+            opacity: 0;
+            visibility: hidden;
+            transition: transform 0.3s ease, opacity 0.3s ease, visibility 0s 0.3s;
+        }
+
+        .chatbase-popup.open {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            visibility: visible;
+            transition: transform 0.3s ease, opacity 0.3s ease, visibility 0s 0s;
+        }
+
+        .chatbase-popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background-color: var(--secondary-color);
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+        .chatbase-popup-header span {
+            font-weight: 500;
+            font-size: 1rem;
+        }
+        .chatbase-popup-content {
+            flex-grow: 1;
+        }
+
+        /* --- RWD --- */
+        @media (min-width: 768px) {
+            .sidebar {
+                position: relative;
+                left: 0 !important;
+                width: var(--sidebar-width);
+            }
+
+            .sidebar.collapsed {
+                width: var(--sidebar-width-collapsed);
+                overflow: hidden;
+            }
+             .main-content-area.sidebar-collapsed {
+                margin-left: var(--sidebar-width-collapsed) !important;
+            }
+
+            #close-sidebar-btn.mobile-only {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .chatbase-popup {
+                width: calc(100vw - 32px);
+                height: 75%;
+                bottom: 16px;
+                right: 16px;
+                max-height: none;
+            }
+            .chatbase-fab {
+                bottom: 16px;
+                right: 16px;
+            }
+            .content-scroll-container section h1 { font-size: 1.8rem; }
+            .content-scroll-container section h2 { font-size: 1.5rem; }
+            .content-scroll-container section h3 { font-size: 1.2rem; }
+        }
+        
+        @media (min-width: 1024px) {
+            :root {
+                --sidebar-width: 300px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 側邊欄 -->
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png" alt="Logo" class="logo">
+                <h2 class="sidebar-title">原子習慣</h2>
+                <button id="close-sidebar-btn" class="icon-button mobile-only" aria-label="關閉側邊欄">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <nav id="course-navigation" class="course-navigation">
+                <!-- 單元和課程將由 JS 動態載入 -->
+            </nav>
+        </aside>
+
+        <!-- 主內容區 -->
+        <main id="main-content-area" class="main-content-area">
+            <header class="main-header">
+                <button id="menu-toggle-btn" class="icon-button" aria-label="切換側邊欄">
+                    <span class="material-icons">menu</span>
+                </button>
+                <h1 id="current-lesson-title" class="current-lesson-title">歡迎！</h1>
+            </header>
+
+            <div id="content-scroll-container" class="content-scroll-container">
+                <!-- 所有課程內容將以<section>形式渲染於此 -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Chatbase 浮動按鈕 -->
+    <button id="chatbase-toggle-btn" class="chatbase-fab" aria-label="開啟AI助教">
+        <span class="material-icons">chat</span>
+    </button>
+
+    <!-- Chatbase 彈出視窗 -->
+    <div id="chatbase-popup" class="chatbase-popup">
+        <div class="chatbase-popup-header">
+            <span>AI 助教</span>
+            <button id="close-chatbase-popup-btn" class="icon-button" aria-label="關閉AI助教">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+        <div class="chatbase-popup-content">
+            <iframe
+                src="https://www.chatbase.co/chatbot-iframe/I604tRkfPb0M99IiExq3s"
+                width="100%"
+                style="height: 100%; border: none;"
+                frameborder="0"
+                title="Chatbase AI Assistant"
+            ></iframe>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const courseData = [
+            {
+                title: "原子習慣威力有多大？",
+                idPrefix: "unit-1", // Used for generating unique IDs
+                lessons: [
+                    { title: "原子習慣的驚人力量", id: "lesson-1-1", content: "<h2>原子習慣的驚人力量</h2><p>習慣是自我改善的複利。如同金錢透過複利加倍，習慣的效果也會在重複的過程中加倍。在任何一天，習慣的影響似乎都很小，但幾個月或幾年下來，它們的影響可能是巨大的。只有回頭看時，好習慣的價值和壞習慣的代價才會變得非常明顯。</p><p>我們常忽略微小的改變，因為它們在當下似乎並不重要。如果你今天省了一點錢，你仍然不是百萬富翁。如果你今天去健身房三次，你的體態可能還是不好。但如果我們每天重複1%的錯誤，日復一日，最終的結果將會非常糟糕。</p><p>關鍵在於，你的習慣軌跡遠比你當前的成果水平重要。如果你想預測自己的人生將走向何方，只需要追蹤微小收穫或損失的曲線。一個每天進步1%的習慣，一年後你會進步將近37倍。相反地，一個每天退步1%的習慣，一年後你會趨近於零。</p><h3>習慣的複利效應</h3><ul><li><strong>正面複利：</strong>生產力、知識、人際關係。</li><li><strong>負面複利：</strong>壓力、負面思考、憤怒。</li></ul><p>突破時刻往往是先前許多行動累積的結果。就像竹子，它花了數年時間在地底下扎根，然後在幾週內長高數十英尺。習慣也是如此，我們努力了很久卻似乎沒有進展，然後突然間，我們就跨越了一個關鍵的門檻，解鎖了新的表現水平。</p>" },
+                    { title: "別管目標，專注於系統", id: "lesson-1-2", content: "<h2>別管目標，專注於系統</h2><p>傳統觀念常教導我們要設定具體、可達成的目標，但《原子習慣》提出了一個反直覺的觀點：目標是關於你想達成的結果，系統則是引導你達到那些結果的過程。如果完全忽略目標，只專注於系統，你仍然會成功。</p><p>為什麼系統優於目標？</p><ol><li><strong>贏家和輸家都有相同的目標：</strong>每個奧運選手都想贏得金牌，每個應徵者都想得到工作。目標本身並不能區分贏家和輸家。</li><li><strong>達成目標只是短暫的改變：</strong>想像你的房間很亂，你設定目標要打掃乾淨。如果你鼓起勁來整理，房間會變乾淨，但如果你不改變造成髒亂的邋遢習慣（系統），很快房間又會亂成一團。你是在治療症狀，而不是解決根本原因。</li><li><strong>目標限制了你的快樂：</strong>「一旦我達成目標，我就會快樂。」這種心態會讓你不斷延遲快樂。而且，目標達成後呢？如果你的動力來自目標，目標實現後你可能頓失方向。</li><li><strong>目標與長期進步互相矛盾：</strong>許多跑者為了一場比賽刻苦訓練數月，比賽結束後就停止訓練。目標達成後，努力的理由消失了。系統化的方法則不然，它本身就包含了持續進步的循環。</li></ol><p>真正的重點不在於任何單一的成就，而是持續改善的循環。最終，是對過程的投入決定了你的進展。愛上過程，成果自然會隨之而來。</p>" },
+                    { title: "改變身分認同", id: "lesson-1-3", content: "<h2>改變身分認同</h2><p>行為改變有三個層次：改變你的成果（目標）、改變你的過程（系統）、改變你的身分認同（信念）。許多人從改變成果開始，但最有效、最持久的改變是從身分認同開始。</p><p>身分認同指的是你對自己是誰的信念。你相信的價值觀、你看待自己與他人的方式。例如：「我是一個健康的人」、「我是一個好學的人」。</p><p>傳統的習慣養成著重於「做什麼」（成果導向），身分認同導向的習慣則著重於「想成為誰」。</p><ul><li><strong>成果導向：</strong>我想減肥（目標），所以我必須運動（過程）。</li><li><strong>身分認同導向：</strong>我想成為一個健康的人。一個健康的人會做什麼？他們會規律運動、健康飲食。</li></ul><p>你的習慣塑造了你的身分認同，你的身分認同也塑造了你的習慣。這是一個雙向道。每個行動都是一張選票，投給你希望成為的那種人。當你每天寫作，你就在強化自己是「作家」的身分認同。當你每天運動，你就在強化自己是「運動員」的身分認同。</p><p>真正的行為改變是身分認同的改變。你可以開始一個習慣，因為它能帶來某種成果，但唯一能讓你堅持下去的理由，是這個習慣成為你身分認同的一部分。任何想要改變習慣的人，真正的問題不是「我想要什麼？」而是「我想成為誰？」</p>" },
+                    { title: "習慣養成的四步驟", id: "lesson-1-4", content: "<h2>習慣養成的四步驟</h2><p>所有習慣的形成都依循著一個反覆的心理學迴路：提示、渴望、回應、獎賞。這個模型是習慣科學的支柱。</p><ol><li><strong>提示 (Cue):</strong> 提示觸發你的大腦啟動某個行為。它是一點點資訊，預示著獎賞。我們的祖先注意的是預示食物、水和性的提示。今天，我們注意的是預示次級獎賞的提示，如金錢、名聲、權力、讚美、認可、愛情、友誼或個人滿足感。</li><li><strong>渴望 (Craving):</strong> 渴望是每個習慣背後的動機力量。沒有渴望，我們就沒有理由行動。你渴望的不是習慣本身，而是它帶來的狀態改變。你不是渴望抽菸，而是渴望抽菸帶來的放鬆感。每個渴望都與改變你內在狀態的期望有關。</li><li><strong>回應 (Response):</strong> 回應是你實際執行的習慣，它可以是想法或行動。回應是否發生，取決於你有多大的動機，以及與行為相關的阻力大小。如果某個行動需要超出你意願的身體或心智努力，你就不會去做。</li><li><strong>獎賞 (Reward):</strong> 獎賞是每個習慣的最終目標。我們追逐獎賞，因為它們有兩個目的：(1) 滿足我們的渴望；(2) 教導我們哪些行動在未來值得記住。大腦是一個獎賞偵測器。當你經歷獎賞時，它會將注意力轉向記住引發獎賞的行動順序。</li></ol><p>如果一個行為在這四個階段中的任何一個都不足，它就不會成為習慣。拿掉提示，習慣根本不會開始。減低渴望，你不會有足夠的動機行動。讓行為變得困難，你無法執行。如果獎賞無法滿足你的慾望，未來你也不會再做一次。沒有前三個步驟，行為不會發生。沒有全部四個步驟，行為不會重複。</p>" }
+                ]
+            },
+            {
+                title: "法則一：讓提示顯而易見",
+                idPrefix: "unit-2",
+                lessons: [
+                    { title: "使用習慣積分卡", id: "lesson-2-1", content: "<h2>使用習慣積分卡 (Habit Scorecard)</h2><p>在改變習慣之前，你必須先了解它們。許多我們的日常習慣都是自動且無意識執行的。習慣積分卡是一個簡單的練習，可以幫助你更清楚地意識到自己的行為。</p><p>製作方法：列出你每天的習慣。從起床到睡覺，盡可能詳細。例如：</p><ul><li>起床 -> 關掉鬧鐘 (+)</li><li>看手機 (neutral) -> (後來可能會標示為 -，取決於你看什麼)</li><li>上廁所 (+)</li><li>刷牙 (+)</li><li>喝杯水 (+)</li><li>泡咖啡 (+)</li><li>吃早餐 (neutral / + / -，取決於吃什麼)</li></ul><p>在每個習慣旁邊，標示它是「好習慣」（+）、「壞習慣」（-）還是「中性習慣」（=）。好壞的標準取決於這個習慣長期來看是否有益於你成為你想成為的那種人。</p><p>這個練習的目的不是立即改變什麼，也不是評判自己，而是單純的「觀察」。透過意識化你的習慣，你才能開始掌控它們。</p>" },
+                    { title: "給習慣時間和地點", id: "lesson-2-2", content: "<h2>給習慣時間和地點 (執行意向 Implementation Intentions)</h2><p>許多人認為自己缺乏意志力，但實際上他們缺乏的是明確性。單純的意願，例如「我要多運動」，通常不夠具體，很容易被遺忘或拖延。「執行意向」是一種策略，你可以明確說明你打算在何時何地執行某個習慣。</p><p>公式是：<strong>我會於 [時間] 在 [地點] 執行 [行為]。</strong></p><ul><li>例如：「我會在明天下午5點，在我的客廳，做20分鐘的瑜珈。」</li><li>「我會在每天早上7點，在廚房的餐桌上，冥想10分鐘。」</li></ul><p>研究顯示，使用執行意向的人，實際執行習慣的機率遠高於那些只有模糊目標的人。時間和地點是兩種最常見的提示，執行意向將你的習慣與特定的提示聯繫起來，使其更難被忽略。</p>" },
+                    { title: "習慣堆疊法", id: "lesson-2-3", content: "<h2>習慣堆疊法 (Habit Stacking)</h2><p>習慣堆疊法是執行意向的一種特殊形式，它將你想養成的新習慣與一個你已經在做的日常習慣連結在一起。這利用了現有習慣的慣性來帶動新習慣。</p><p>公式是：<strong>做完 [現有習慣] 之後，我會執行 [新習慣]。</strong></p><ul><li>例如：「在我每天早上喝完咖啡後，我會冥想一分鐘。」</li><li>「在我每天刷完牙後，我會用牙線潔牙。」</li><li>「在我每天吃完晚餐後，我會立刻把碗盤洗乾淨。」</li></ul><p>選擇正確的「現有習慣」作為觸發點非常重要。它應該是你每天都會做、頻率穩定且明確的行為。習慣堆疊法創造了一個清晰的提示鏈，將新習慣無縫地融入你的日常生活中。</p>" },
+                    { title: "改變環境法", id: "lesson-2-4", content: "<h2>改變環境法 (Design Your Environment)</h2><p>環境是塑造人類行為的隱形之手。我們常常認為自己的行為是意志力的結果，但實際上，環境中的提示對我們的影響遠大於我們的想像。最容易的習慣是那些提示顯而易見的習慣。</p><p>要養成好習慣，就要讓提示顯而易見；要戒除壞習慣，就要讓提示隱而不現。</p><ul><li><strong>讓好習慣的提示更突出：</strong><ul><li>想多喝水？在家的各個角落都放上水瓶。</li><li>想練習吉他？把吉他放在客廳中央，而不是衣櫃裡。</li><li>想記得吃藥？把藥瓶放在床頭櫃或浴室洗手台上。</li></ul></li><li><strong>讓壞習慣的提示更隱蔽：</strong><ul><li>想少看電視？把電視從臥室移走，或者拔掉插頭。</li><li>想少吃零食？不要買零食，或者把它們放在很難拿到的地方。</li><li>想減少手機使用？把手機放在另一個房間充電，或使用App限制。</li></ul></li></ul><p>創造一個能讓你更容易執行好習慣、更難執行壞習慣的環境，比單純依賴意志力更有效。一個穩定的環境，習慣也更容易穩定下來。</p>" }
+                ]
+            },
+             {
+                title: "法則二：讓習慣有吸引力",
+                idPrefix: "unit-3",
+                lessons: [
+                    { title: "讓習慣有吸引力", id: "lesson-3-1", content: "<h2>讓習慣有吸引力 (Make It Attractive)</h2><p>習慣的形成受到多巴胺的強烈影響。多巴胺是一種神經傳導物質，與愉悅感和獎勵預期有關。當我們預期某個行為會帶來獎勵時，多巴胺水平會上升，從而驅使我們採取行動。因此，讓習慣變得更有吸引力，可以增加我們執行的動力。</p><p>吸引力來自於對獎賞的「預期」。我們越期待一個習慣帶來正面感受，就越有可能去執行它。</p>" },
+                    { title: "誘惑綑綁法", id: "lesson-3-2", content: "<h2>誘惑綑綁法 (Temptation Bundling)</h2><p>誘惑綑綁法是一種讓習慣更具吸引力的策略，它將一個「想要」的行為與一個「需要」的行為配對起來。這樣，你就更有可能執行那個「需要」的行為，因為它與你期待的獎勵（「想要」的行為）連結在一起了。</p><p>策略一：<strong>在做完 [你需要做的習慣] 之後，我會做 [你想要做的活動]。</strong></p><ul><li>例如：「在我處理完工作郵件後（需要），我會看一集我喜歡的影集（想要）。」</li><li>「在我運動30分鐘後（需要），我會花15分鐘滑社交媒體（想要）。」</li></ul><p>策略二（更進階）：<strong>當我在做 [你想要做的活動] 時，我會同時執行 [你需要做的習慣]。</strong> (如果兩者可以並行)</p><ul><li>例如：「當我在看Netflix時（想要），我會同時折衣服（需要）。」</li><li>「當我在聽Podcast時（想要），我會在跑步機上走路（需要）。」</li></ul><p>關鍵是找到一個你真心喜歡的「誘惑」，並將它與你想培養但不那麼吸引人的習慣綁定。</p>" },
+                    { title: "模仿他人法 (社會規範的角色)", id: "lesson-3-3", content: "<h2>模仿他人法 (The Role of Family and Friends in Shaping Habits)</h2><p>人類是社會性動物，我們傾向於模仿周圍人的行為。我們所處的文化、家庭和朋友圈，深刻地影響著我們的習慣。當某個行為在我們的社群中被視為「正常」或「受歡迎」時，我們就更有可能去採納它。</p><p>我們會模仿三種群體：</p><ol><li><strong>親近的人 (The Close)：</strong>家人和朋友。他們的習慣和信念對我們影響最大。如果你周圍的人都認為健康飲食很重要，你可能也會更傾向於健康飲食。</li><li><strong>多數的人 (The Many)：</strong>我們所屬的部落或社群的整體行為。我們會順應群體的壓力，採納被廣泛接受的行為模式。</li><li><strong>有力的人 (The Powerful)：</strong>那些我們敬佩、尊敬或擁有較高社會地位的人。我們會模仿他們的行為，以期獲得類似的成功或認可。</li></ol><p>利用這個原則：</p><ul><li>加入一個你期望的行為是常態的文化圈。如果你想多讀書，就加入讀書會。如果你想健身，就找個一起運動的夥伴或去健身房。</li><li>讓自己被那些擁有你好習慣的人包圍。</li></ul><p>當一個習慣對你而言意味著歸屬感和被接納時，它就變得非常有吸引力。</p>" },
+                    { title: "轉念法 (改變你對習慣的感受)", id: "lesson-3-4", content: "<h2>轉念法 (Reprogramming Your Brain to Enjoy Hard Habits)</h2><p>我們可以透過改變與習慣相關的「感受」和「聯想」來讓它們變得更有吸引力。這涉及到重新建構你對一個習慣的看法，將它與正面的結果和感受連結起來，而不是負面的。</p><p>許多困難的習慣，短期內可能不那麼愉快，但長期來看是有益的。轉念法的核心是強調這些長遠的好處，並學會享受過程。</p><p>做法：</p><ul><li><strong>重新框架：</strong>將「我必須做這件事」的想法轉變成「我可以做這件事」。例如，不要想「我必須早起運動」，而是想「我可以透過運動來提升我的能量和健康」。</li><li><strong>關注益處：</strong>在執行習慣前或執行過程中，有意識地去想這個習慣會帶來的好處。例如，運動時，感受身體的活力；工作時，想像完成任務後的成就感。</li><li><strong>創造儀式感：</strong>在困難的習慣前後加入一些小的、愉悅的儀式，可以改善整體體驗。例如，寫作前泡一杯喜歡的茶，運動後聽一段放鬆的音樂。</li><li><strong>將「困難」與「機會」連結：</strong>看到困難的習慣是成長和進步的機會，而不是負擔。</li></ul><p>透過不斷強化正面聯想，即使是原本不那麼吸引人的習慣，也會逐漸變得更容易接受，甚至令人期待。</p>" }
+                ]
+            },
+            {
+                title: "法則三：讓行動輕而易舉",
+                idPrefix: "unit-4",
+                lessons: [
+                     { title: "頻率比時間重要", id: "lesson-4-1", content: "<h2>頻率比時間重要 (Motion vs. Action)</h2><p>在養成新習慣的初期，我們很容易陷入「準備」和「計畫」的循環（動態 Motion），而遲遲沒有真正開始「執行」（行動 Action）。例如，我們花很多時間研究最佳健身計畫、購買運動裝備，卻很少實際去運動。動態本身不會帶來結果，只有行動才會。</p><p>法則三強調的是「讓行動輕而易舉」，這不僅指減少行動的阻力，也意味著要將重點放在「重複的頻率」上，而非單次執行的「時長」或「完美度」。</p><p>習慣的形成依賴於重複。你做某件事的次數越多，你的大腦就越能將其自動化。因此，在剛開始培養一個新習慣時，即使每次只做一點點，但只要能堅持每天都做（或按計畫的頻率做），效果遠勝於偶爾一次長時間的努力。例如，每天冥想1分鐘，比每週冥想1小時更容易養成習慣。一旦習慣穩固了，再逐漸增加時長或強度會更容易。</p>" },
+                     { title: "最小努力原則", id: "lesson-4-2", content: "<h2>最小努力原則 (The Law of Least Effort)</h2><p>人類行為遵循最小努力原則：在多種選擇面前，我們天生傾向於選擇那個消耗能量最少的選項。能量是寶貴的，大腦的構造就是為了盡可能節約能量。</p><p>這意味著，一個習慣越困難、越費力，我們就越不可能堅持下去。相反，如果一個習慣很容易執行，我們就更有可能養成它。</p><p>如何應用最小努力原則：</p><ul><li><strong>減少阻力：</strong>思考一下你想養成的習慣，過程中存在哪些阻礙？如何消除或減少它們？<ul><li>想多運動？把運動服在前一晚準備好。選擇離家近的健身房。</li><li>想健康飲食？提前準備好健康的食材和餐點。把不健康的零食清理掉。</li><li>想多閱讀？把書放在隨手可及的地方。</li></ul></li><li><strong>增加壞習慣的阻力：</strong>反過來，增加執行壞習慣的難度。<ul><li>想少滑手機？把手機放在另一個房間。刪除浪費時間的App。</li><li>想少吃垃圾食物？不要購買。去超市時避開零食區。</li></ul></li></ul><p>環境設計在這裡再次扮演重要角色。創造一個讓好習慣的執行路徑最為順暢的環境，讓「做正確的事」變得毫不費力。</p>" },
+                     { title: "兩分鐘法則", id: "lesson-4-3", content: "<h2>兩分鐘法則 (The Two-Minute Rule)</h2><p>兩分鐘法則是讓行動輕而易舉的強力策略。它的核心思想是：當你開始一個新習慣時，它應該能在兩分鐘內完成。</p><p>這個法則利用了物理學的慣性原理：靜止的物體傾向於保持靜止，運動的物體傾向於保持運動。開始行動往往是最困難的一步。兩分鐘法則幫助你克服初始的阻力，一旦開始了，通常更容易繼續下去。</p><p>將你的目標縮減到兩分鐘版本：</p><ul><li>「每晚讀書」變成「讀一頁書」。</li><li>「做30分鐘瑜珈」變成「拿出瑜珈墊」。</li><li>「整理房間」變成「把一件衣服掛起來」。</li><li>「跑三公里」變成「穿上跑鞋」。</li></ul><p>目標不是只做兩分鐘，而是「掌握開始的藝術」。你必須先標準化「開始」這個動作。一個習慣必須先建立起來，然後才能改善它。兩分鐘法則是通往更大目標的「入門儀式」。</p><p>即使你只做了兩分鐘，你依然強化了你想要的身分認同。例如，即使只拿出瑜珈墊，你也是在投票給「成為一個做瑜珈的人」。這是關於「出現」（showing up）的力量。</p>" }
+                ]
+            },
+            {
+                title: "法則四：讓獎賞令人滿足",
+                idPrefix: "unit-5",
+                lessons: [
+                     { title: "讓獎賞令人滿足 (概述)", id: "lesson-5-1", content: "<h2>讓獎賞令人滿足 (Make It Satisfying)</h2><p>行為改變的第四條也是最後一條法則是讓獎賞令人滿足。如果一個經驗令人滿足，我們就更有可能重複它。這是因為大腦的演化機制讓我們偏好能帶來立即回饋的行為。</p><p>人類大腦的優先順序是：立即的獎賞優於延遲的獎賞。許多壞習慣（如吃垃圾食物、抽菸）能提供立即的滿足感，即使它們長期有害。而許多好習慣（如運動、健康飲食）的獎賞是延遲的，短期內甚至可能感到不適。</p><p>因此，要讓好習慣持久，關鍵在於找到方法讓它們在「當下」就感覺良好，或者至少提供某種形式的立即滿足感。如果一個習慣不能在某種程度上令人滿足，你就沒有理由堅持下去。</p>" },
+                     { title: "迴紋針策略", id: "lesson-5-2", content: "<h2>迴紋針策略 (The Paper Clip Strategy)</h2><p>迴紋針策略是一個簡單但非常有效的視覺化進度工具，它可以提供立即的滿足感。</p><p>做法：</p><ol><li>準備兩個容器（例如罐子、盒子）。</li><li>在其中一個容器裡放入一定數量的迴紋針（或其他小物件，如彈珠、硬幣）。這個數量可以是你設定的目標次數（例如，一個月內打30通銷售電話，就放30個迴紋針）。</li><li>每當你完成一次目標行為（例如，打一通銷售電話），就從第一個容器裡拿一個迴紋針，放到第二個空的容器裡。</li></ol><p>這個簡單的動作創造了一個清晰的視覺證據，證明你正在取得進展。移動迴紋針的行為本身就帶來了一種微小的滿足感和成就感。看著第二個容器裡的迴紋針越來越多，第一個容器裡的越來越少，會給你持續的動力。</p><p>這個策略適用於任何可量化次數的習慣。它將抽象的進度轉化為具體的、可見的獎賞。</p>" },
+                     { title: "習慣追蹤器", id: "lesson-5-3", content: "<h2>習慣追蹤器 (How to Use a Habit Tracker)</h2><p>習慣追蹤器是記錄你是否完成某個習慣的最簡單方式。最基本的形式就是在日曆上打勾。其他形式包括日記、App 或特製的追蹤表單。</p><p>習慣追蹤器之所以有效，基於幾個心理學原理：</p><ol><li><strong>它創造了一個視覺提示：</strong>看到追蹤器本身就能提醒你該行動了。</li><li><strong>它本身具有激勵作用：</strong>看著連續的紀錄不斷增長，會帶來滿足感，你會不想中斷這個連續紀錄（Don't break the chain!）。</li><li><strong>它能提供立即的滿足感：</strong>每次完成習慣並在追蹤器上做記錄時，都是對努力的一種肯定。</li><li><strong>它能讓你誠實面對自己：</strong>清楚記錄你何時行動、何時沒有，避免自我欺騙。</li></ol><p>使用習慣追蹤器的技巧：</p><ul><li><strong>盡可能自動化記錄：</strong>如果能自動記錄（例如健身手環記錄步數），就更省力。</li><li><strong>手動記錄應在完成習慣後立即進行：</strong>強化行為與獎賞的連結。</li><li><strong>將追蹤器放在顯眼的位置：</strong>例如，貼在冰箱上、放在辦公桌上。</li></ul><p>追蹤不僅僅是記錄，它本身就是一種獎勵形式。</p>" },
+                    { title: "絕不錯過兩次", id: "lesson-5-4", content: "<h2>絕不錯過兩次 (How to Recover Quickly When Your Habits Break Down)</h2><p>即使有最好的計畫，生活中也難免會有打亂習慣的時候。可能是生病、旅行、突發狀況等。重點不是追求完美，而是學會在偏離軌道後迅速回到正軌。</p><p>「絕不錯過兩次」的原則非常簡單：你可以錯過一次，但絕對不要連續錯過兩次。錯過一次是意外，錯過兩次就是一個新（壞）習慣的開始。</p><p>這個原則的重要性在於：</p><ul><li><strong>防止小失誤演變成大災難：</strong>一次的鬆懈可能不會造成太大傷害，但如果放任不管，很容易導致習慣完全崩潰。</li><li><strong>保持動力：</strong>即使某天失敗了，只要你提醒自己「明天一定要補回來」，就能維持住一定的慣性。</li><li><strong>培養韌性：</strong>接受不完美，學會從錯誤中恢復，是長期堅持的關鍵。</li></ul><p>當你某天未能執行習慣時，不要陷入自責或罪惡感。專注於下一次機會，確保自己不會再次錯過。保持簡單，回到基礎，盡快重新開始。</p>" }
+                ]
+            },
+            {
+                title: "總結",
+                idPrefix: "unit-summary", // A distinct prefix or just 'summary'
+                id: "unit-summary-content", // Unique ID for this content block
+                content: "<h1>原子習慣 - 總結</h1><p>《原子習慣》提供了一個實用的框架，幫助我們理解習慣如何運作，以及如何建立好習慣、戒除壞習慣。核心概念圍繞著行為改變的四大法則，以及與之對應的身分認同轉變。</p><h3>行為改變的四大法則</h3><ol><li><strong>法則一：讓提示顯而易見 (Make It Obvious)</strong><ul><li>習慣積分卡</li><li>執行意向</li><li>習慣堆疊法</li><li>設計環境</li></ul></li><li><strong>法則二：讓習慣有吸引力 (Make It Attractive)</strong><ul><li>誘惑綑綁法</li><li>加入渴望行為是常態的文化</li><li>重新設定你的大腦以享受困難的習慣 (轉念法)</li></ul></li><li><strong>法則三：讓行動輕而易舉 (Make It Easy)</strong><ul><li>減少阻力 (最小努力原則)</li><li>打造一個有助於行動的環境</li><li>掌握決定性的時刻 (兩分鐘法則)</li></ul></li><li><strong>法則四：讓獎賞令人滿足 (Make It Satisfying)</strong><ul><li>使用強化劑 (立即獎賞)</li><li>讓「無所事事」也令人愉快</li><li>習慣追蹤器</li><li>絕不錯過兩次</li></ul></li></ol><p>真正的行為改變，是身分認同的改變。你做的每個行動，都是在為你想要成為的那種人投票。透過微小的、持續的改進（原子習慣），你可以建立強大的系統，引領你走向非凡的成果。記住，專注於系統，而非目標；追求1%的進步，而不是追求完美。</p>",
+                lessons: []
+            }
+        ];
+
+
+        const sidebar = document.getElementById('sidebar');
+        const menuToggleBtn = document.getElementById('menu-toggle-btn');
+        const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+        const courseNavigation = document.getElementById('course-navigation');
+        const currentLessonTitleElement = document.getElementById('current-lesson-title');
+        const mainContentArea = document.getElementById('main-content-area');
+        const contentScrollContainer = document.getElementById('content-scroll-container');
+
+        const chatbaseToggleBtn = document.getElementById('chatbase-toggle-btn');
+        const chatbasePopup = document.getElementById('chatbase-popup');
+        const closeChatbasePopupBtn = document.getElementById('close-chatbase-popup-btn');
+
+        let activeNavLink = null;
+        const sectionOffsets = [];
+        const mainHeaderElement = document.querySelector('.main-header');
+
+
+        function renderAllContent() {
+            courseData.forEach((unit, unitIndex) => {
+                const unitId = unit.idPrefix || `unit-${unitIndex}`;
+
+                if (unit.content && (!unit.lessons || unit.lessons.length === 0)) { // Direct content for a unit (like "總結")
+                    const unitSection = document.createElement('section');
+                    unitSection.id = unit.id || `${unitId}-summary-content`;
+                    unitSection.innerHTML = unit.content;
+                    contentScrollContainer.appendChild(unitSection);
+                } else if (unit.lessons && unit.lessons.length > 0) {
+                    // Optional: Create a header section for the unit title itself if desired
+                    // const unitHeaderSection = document.createElement('section');
+                    // unitHeaderSection.id = `${unitId}-header`;
+                    // unitHeaderSection.innerHTML = `<h2>${unit.title}</h2>`; // Content might have h2 already
+                    // contentScrollContainer.appendChild(unitHeaderSection);
+
+                    unit.lessons.forEach((lesson, lessonIndex) => {
+                        const lessonSection = document.createElement('section');
+                        lessonSection.id = lesson.id || `${unitId}-lesson-${lessonIndex}`;
+                        // The content for lesson already includes h2 or h3
+                        lessonSection.innerHTML = lesson.content;
+                        contentScrollContainer.appendChild(lessonSection);
+                    });
+                }
+            });
+            calculateSectionOffsets();
+        }
+
+        function populateSidebar() {
+            courseData.forEach((unit, unitIndex) => {
+                const unitElement = document.createElement('div');
+                unitElement.classList.add('unit');
+                const unitIdPrefix = unit.idPrefix || `unit-${unitIndex}`;
+
+                if (unit.lessons && unit.lessons.length > 0) {
+                    const unitTitleButton = document.createElement('button');
+                    unitTitleButton.classList.add('unit-title');
+                    unitTitleButton.setAttribute('aria-expanded', 'false');
+                    unitTitleButton.setAttribute('aria-controls', `unit-lessons-${unitIndex}`);
+                    unitTitleButton.innerHTML = `
+                        <span>${unit.title}</span>
+                        <span class="material-icons">chevron_right</span>
+                    `;
+                    unitElement.appendChild(unitTitleButton);
+
+                    const lessonsList = document.createElement('ul');
+                    lessonsList.classList.add('lessons-list');
+                    lessonsList.id = `unit-lessons-${unitIndex}`;
+
+                    unit.lessons.forEach((lesson, lessonIndex) => {
+                        const lessonItem = document.createElement('li');
+                        const lessonLink = document.createElement('a');
+                        lessonLink.classList.add('lesson-item');
+                        lessonLink.textContent = lesson.title;
+                        lessonLink.href = `#${lesson.id || `${unitIdPrefix}-lesson-${lessonIndex}`}`;
+                        lessonItem.appendChild(lessonLink);
+                        lessonsList.appendChild(lessonItem);
+                    });
+                    unitElement.appendChild(lessonsList);
+                } else if (unit.content) { // For units like "總結" with direct content
+                    const unitLink = document.createElement('a');
+                    unitLink.classList.add('unit-title', 'no-lessons', 'lesson-item');
+                    unitLink.href = `#${unit.id || `${unitIdPrefix}-summary-content`}`;
+                    unitLink.innerHTML = `<span>${unit.title}</span>`;
+                    unitElement.appendChild(unitLink);
+                }
+                courseNavigation.appendChild(unitElement);
+            });
+        }
+
+        function calculateSectionOffsets() {
+            sectionOffsets.length = 0;
+            const sections = contentScrollContainer.querySelectorAll('section[id]');
+            const headerHeight = mainHeaderElement ? mainHeaderElement.offsetHeight : 0;
+            sections.forEach(section => {
+                // offsetTop is relative to the offsetParent. contentScrollContainer is the scrollable one.
+                // So, section.offsetTop relative to contentScrollContainer's top padding edge is fine.
+                sectionOffsets.push({
+                    id: section.id,
+                    offsetTop: section.offsetTop,
+                    // Add a little buffer, e.g., for sections slightly above the ideal trigger point.
+                    triggerOffset: section.offsetTop - headerHeight - 20 // 20px buffer
+                });
+            });
+            sectionOffsets.sort((a, b) => a.offsetTop - b.offsetTop);
+        }
+
+        function updateActiveNavLink(linkElement) {
+            if (activeNavLink) {
+                activeNavLink.classList.remove('active');
+                 // If the parent unit was expanded, keep it so, unless the new active link is in a different unit.
+                // This part might need refinement if units auto-collapse.
+            }
+            if (linkElement) {
+                linkElement.classList.add('active');
+                activeNavLink = linkElement;
+
+                // Ensure parent unit is expanded if this link is in a collapsed list
+                const parentUnit = linkElement.closest('.unit');
+                if (parentUnit) {
+                    const lessonsList = parentUnit.querySelector('.lessons-list');
+                    if (lessonsList && !parentUnit.classList.contains('expanded')) {
+                        parentUnit.classList.add('expanded');
+                        lessonsList.style.maxHeight = lessonsList.scrollHeight + "px";
+                        const unitTitleBtn = parentUnit.querySelector('.unit-title');
+                        if (unitTitleBtn) unitTitleBtn.setAttribute('aria-expanded', 'true');
+                    }
+                }
+            }
+        }
+        
+        let scrollTimeout;
+        contentScrollContainer.addEventListener('scroll', function() {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                let currentSectionId = null;
+                // scrollTop is the amount scrolled from the top of contentScrollContainer
+                const scrollPosition = contentScrollContainer.scrollTop;
+                // Header height is relative to the viewport if sticky, or mainContentArea
+                // Here we want the trigger point for activation slightly below the actual header in the viewport
+                const activationPoint = scrollPosition + (mainHeaderElement.offsetHeight * 0.3); // Activate when 30% of header is passed or section is higher
+
+                for (let i = sectionOffsets.length - 1; i >= 0; i--) {
+                     // section.offsetTop is relative to the top of the contentScrollContainer
+                    if (sectionOffsets[i].offsetTop <= activationPoint + 20 ) { // Add some leeway
+                        currentSectionId = sectionOffsets[i].id;
+                        break;
+                    }
+                }
+
+                if (!currentSectionId && sectionOffsets.length > 0 && scrollPosition < sectionOffsets[0].offsetTop) {
+                    currentSectionId = sectionOffsets[0].id; // Default to first if scrolled above all
+                }
+
+
+                if (currentSectionId) {
+                    const correspondingLink = courseNavigation.querySelector(`a[href="#${currentSectionId}"]`);
+                    if (correspondingLink) {
+                        if (!correspondingLink.classList.contains('active')) {
+                            updateActiveNavLink(correspondingLink);
+                        }
+                        const sectionElement = document.getElementById(currentSectionId);
+                        if (sectionElement) {
+                            const firstHeading = sectionElement.querySelector('h1, h2, h3, h4');
+                             // Use link text if no heading found or for consistency, or use lesson title from data
+                            const unitIndex = correspondingLink.closest('.unit') ? Array.from(courseNavigation.children).indexOf(correspondingLink.closest('.unit')) : -1;
+                            let titleToSet = correspondingLink.textContent.trim();
+                             if(firstHeading){ // Prefer heading in content
+                                titleToSet = firstHeading.textContent.trim();
+                            }
+                            currentLessonTitleElement.textContent = titleToSet;
+                        }
+                    }
+                }
+            }, 50); // Reduced debounce for snappier response
+        });
+
+        courseNavigation.addEventListener('click', function(event) {
+            const target = event.target;
+            const unitTitleButton = target.closest('.unit-title:not(.no-lessons)');
+            const lessonLink = target.closest('.lesson-item');
+
+            if (unitTitleButton && !target.closest('a')) { // If it's a button for expansion
+                event.preventDefault(); // Prevent any default if it was an <a> styled as button mistakenly
+                const unitElement = unitTitleButton.closest('.unit');
+                const lessonsList = unitElement.querySelector('.lessons-list');
+                if (lessonsList) {
+                    const isExpanded = unitElement.classList.toggle('expanded');
+                    unitTitleButton.setAttribute('aria-expanded', isExpanded.toString());
+                    lessonsList.style.maxHeight = isExpanded ? lessonsList.scrollHeight + "px" : "0px";
+                }
+            }
+            
+            if (lessonLink && lessonLink.tagName === 'A' && lessonLink.getAttribute('href').startsWith('#')) {
+                event.preventDefault();
+                const targetId = lessonLink.getAttribute('href').substring(1);
+                const targetSection = document.getElementById(targetId);
+
+                if (targetSection) {
+                    // contentScrollContainer.style.scrollBehavior = 'auto'; // Temporarily disable for immediate jump
+                    targetSection.scrollIntoView({ behavior: 'smooth' }); // CSS handles fixed header offset with scroll-margin-top
+                    // setTimeout(() => { contentScrollContainer.style.scrollBehavior = 'smooth'; }, 0);
+
+                    // updateActiveNavLink(lessonLink); // Scroll spy will handle this, but can do it immediately
+                    // Manually trigger scroll event can also work but might be less direct
+                    // contentScrollContainer.dispatchEvent(new Event('scroll')); // Update title & active based on new pos
+                     // For instant title update:
+                    const titleInLink = lessonLink.textContent.trim();
+                    currentLessonTitleElement.textContent = titleInLink; // Update immediately
+
+                    if (window.innerWidth < 768 && sidebar.classList.contains('open')) {
+                        sidebar.classList.remove('open');
+                    }
+                }
+            }
+        });
+
+        menuToggleBtn.addEventListener('click', function() {
+            const isMobile = window.innerWidth < 768;
+            if (isMobile) {
+                sidebar.classList.toggle('open');
+            } else {
+                sidebar.classList.toggle('collapsed');
+                mainContentArea.classList.toggle('sidebar-collapsed');
+                const newMarginLeft = sidebar.classList.contains('collapsed') ?
+                    getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width-collapsed') :
+                    getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width');
+                mainContentArea.style.marginLeft = newMarginLeft;
+            }
+            // Recalculate offsets after sidebar transition finishes
+            setTimeout(calculateSectionOffsets, parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--transition-speed').replace('s',''))*1000 + 50);
+        });
+
+        closeSidebarBtn.addEventListener('click', function() {
+            if (sidebar.classList.contains('open')) sidebar.classList.remove('open');
+        });
+
+        chatbaseToggleBtn.addEventListener('click', function() {
+            chatbasePopup.classList.toggle('open');
+            if(chatbasePopup.classList.contains('open')) {
+                chatbaseToggleBtn.setAttribute('aria-expanded', 'true');
+            } else {
+                 chatbaseToggleBtn.setAttribute('aria-expanded', 'false');
+            }
+        });
+        closeChatbasePopupBtn.addEventListener('click', function() {
+            chatbasePopup.classList.remove('open');
+             chatbaseToggleBtn.setAttribute('aria-expanded', 'false');
+        });
+
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                const isMobile = window.innerWidth < 768;
+                if (isMobile) {
+                    mainContentArea.style.marginLeft = '0px'; // Sidebar overlays
+                    sidebar.classList.remove('collapsed'); // Remove desktop collapsed state
+                } else {
+                    sidebar.classList.remove('open'); // Remove mobile open state
+                    const currentMargin = sidebar.classList.contains('collapsed') ?
+                        getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width-collapsed') :
+                        getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width');
+                    mainContentArea.style.marginLeft = currentMargin;
+                }
+                calculateSectionOffsets();
+                contentScrollContainer.dispatchEvent(new Event('scroll')); // Trigger scroll spy
+            }, 100);
+        });
+
+        // --- INITIALIZATION ---
+        renderAllContent(); // Creates sections in HTML
+        populateSidebar();  // Creates nav links
+
+        // Set initial main content margin
+        if (window.innerWidth >= 768) {
+            const initialMargin = sidebar.classList.contains('collapsed') ?
+                getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width-collapsed') :
+                getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width');
+            mainContentArea.style.marginLeft = initialMargin;
+        } else {
+            mainContentArea.style.marginLeft = '0px';
+        }
+        
+        // Set initial active link and title (if page loads with a hash or at top)
+        let initialTargetId = window.location.hash.substring(1);
+        let initialLinkToActivate = null;
+
+        if (initialTargetId) {
+            initialLinkToActivate = courseNavigation.querySelector(`a[href="#${initialTargetId}"]`);
+            const targetSection = document.getElementById(initialTargetId);
+            if (targetSection) {
+                // Use timeout to allow DOM to settle before scrolling
+                setTimeout(() => targetSection.scrollIntoView(), 0);
+            }
+        }
+        
+        if (!initialLinkToActivate && courseData.length > 0) { // Default to first item if no hash
+            if (courseData[0].lessons && courseData[0].lessons.length > 0) {
+                 initialTargetId = courseData[0].lessons[0].id || `${courseData[0].idPrefix || 'unit-0'}-lesson-0`;
+            } else if (courseData[0].content) { // Summary like unit
+                initialTargetId = courseData[0].id || `${courseData[0].idPrefix || 'unit-0'}-summary-content`;
+            }
+            if (initialTargetId) {
+                initialLinkToActivate = courseNavigation.querySelector(`a[href="#${initialTargetId}"]`);
+            }
+        }
+
+        if (initialLinkToActivate) {
+             updateActiveNavLink(initialLinkToActivate);
+            const linkedSection = document.getElementById(initialTargetId);
+            if (linkedSection) {
+                const firstHeading = linkedSection.querySelector('h1, h2, h3, h4');
+                currentLessonTitleElement.textContent = firstHeading ? firstHeading.textContent.trim() : initialLinkToActivate.textContent.trim();
+            }
+        } else { // Fallback title
+             currentLessonTitleElement.textContent = "歡迎！";
+        }
+        
+        // Final check for initial scroll position for scroll spy
+        contentScrollContainer.dispatchEvent(new Event('scroll'));
+    });
+    </script>
+</body>
+</html>
