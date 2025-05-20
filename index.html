@@ -3,34 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>原子習慣數位教材</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <title>原子習慣數位教材 - 煥新版</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #1a73e8; /* Google Blue */
-            --secondary-color: #f1f3f4; /* Google Light Grey */
-            --text-color: #202124; /* Google Dark Grey / Black */
-            --text-color-light: #5f6368; /* Google Medium Grey */
-            --border-color: #dadce0;
+            /* --- 全新配色方案 --- */
+            --primary-color: #2979FF; /* Material Blue A400 - 鮮明且現代 */
+            --primary-color-dark: #1C58D9; /* 用於 :hover 或 :active 的深色調 */
+            --primary-color-light: #E3F2FD; /* 淺藍色，用於背景或點綴 */
+            --accent-color: #FFC107; /* 黃色強調色，例如進度、提醒 (暫未廣泛使用，備用) */
+            
+            --secondary-color: #F8F9FA; /* 側邊欄和彈窗背景 - 非常淺的灰 */
+            --content-bg-color: #FFFFFF; /* 主內容背景 - 純白 */
+            
+            --text-color: #263238;    /* 主要文字顏色 - 深藍灰 */
+            --text-color-light: #546E7A; /* 次要文字顏色 - 較淺的藍灰 */
+            --text-color-on-primary: #FFFFFF; /* 在主色背景上的文字顏色 */
+
+            --border-color: #E0E0E0; /* 更柔和的邊框顏色 */
+            --card-shadow: 0 5px 15px rgba(0, 0, 0, 0.08); /* 卡片陰影 */
+            --card-shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.12); /* 卡片懸停陰影 */
+            --border-radius-sm: 4px;
+            --border-radius-md: 8px;
+            --border-radius-lg: 12px;
+
             --sidebar-width: 280px;
-            --sidebar-width-collapsed: 0px; /* Can be non-zero if you want icons */
-            --header-height: 60px;
+            --sidebar-width-collapsed: 0px; /* 折疊時可以設為 e.g. 60px 如果只想顯示圖示 */
+            --header-height: 64px; /* 稍微增加頭部高度 */
             --transition-speed: 0.3s;
+            --transition-curve: cubic-bezier(0.4, 0, 0.2, 1); /* Material Design 標準動畫曲線 */
+
             --chat-fab-size: 56px;
-            --chat-popup-width: 360px;
-            --chat-popup-height: 80%;
-            --chat-popup-max-height: 600px;
+            --chat-popup-width: 380px; /* 略微加寬聊天彈窗 */
+            --chat-popup-height: 85%;
+            --chat-popup-max-height: 640px;
+        }
+
+        /* --- 基礎與重設 --- */
+        *, *::before, *::after {
+            box-sizing: border-box;
         }
 
         body {
             margin: 0;
-            font-family: 'Roboto', sans-serif;
-            background-color: #fff;
+            font-family: 'Noto Sans TC', 'Roboto', sans-serif; /* 優先使用 Noto Sans TC 增強中文顯示 */
+            background-color: var(--content-bg-color);
             color: var(--text-color);
             display: flex;
             min-height: 100vh;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         .app-container {
@@ -39,7 +63,7 @@
             min-height: 100vh;
         }
 
-        /* --- Sidebar --- */
+        /* --- 側邊欄 Sidebar --- */
         .sidebar {
             width: var(--sidebar-width);
             background-color: var(--secondary-color);
@@ -47,22 +71,24 @@
             display: flex;
             flex-direction: column;
             overflow-y: auto;
-            transition: width var(--transition-speed) ease, transform var(--transition-speed) ease,
-                        margin-left var(--transition-speed) ease;
+            transition: width var(--transition-speed) var(--transition-curve), 
+                        transform var(--transition-speed) var(--transition-curve),
+                        margin-left var(--transition-speed) var(--transition-curve);
             flex-shrink: 0;
-            position: fixed;
+            position: fixed; /* 手機版 fixed 定位 */
             left: calc(-1 * var(--sidebar-width));
             top: 0;
             bottom: 0;
             z-index: 1000;
         }
 
-        .sidebar.open {
+        .sidebar.open { /* 手機版展開時 */
             left: 0;
+            box-shadow: 0 0 25px rgba(0,0,0,0.1); 
         }
 
         .sidebar-header {
-            padding: 16px;
+            padding: 16px 20px; 
             display: flex;
             align-items: center;
             border-bottom: 1px solid var(--border-color);
@@ -70,52 +96,73 @@
             box-sizing: border-box;
         }
 
-        .logo {
-            height: 30px;
-            width: 30px;
-            margin-right: 12px;
-            object-fit: contain;
+        .logo { /* 使用 Material Icon 作為示例 Logo */
+            font-family: 'Material Icons Outlined'; /* 確保使用 Outlined 風格圖示 */
+            font-size: 32px;
+            color: var(--primary-color);
+            margin-right: 16px;
         }
+        .logo::before {
+            content: "auto_stories"; /* 一個書本的圖示，代表課程/學習 */
+        }
+        /* 如果您有自己的圖片 logo，請取消註解下一行並調整，同時隱藏上面的 .logo span */
+        /* .logo-img { height: 32px; width: auto; margin-right: 12px; object-fit: contain; } */
+
 
         .sidebar-title {
-            font-size: 1.25rem;
+            font-size: 1.35rem; 
             font-weight: 500;
             margin: 0;
             color: var(--text-color);
             flex-grow: 1;
+            white-space: nowrap; /* 避免標題換行 */
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .course-navigation {
+            padding-top: 8px; 
         }
 
         .course-navigation .unit {
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
         .course-navigation .unit-title {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 16px;
+            padding: 14px 20px;
             font-weight: 500;
             cursor: pointer;
-            border-bottom: 1px solid var(--border-color);
             background-color: transparent;
-            width: 100%;
+            width: calc(100% - 16px); /* 為了左側留白給 active indicator */
+            margin-left: 8px;
             text-align: left;
             border: none;
             font-size: 0.95rem;
-            color: var(--text-color);
-            text-decoration: none; /* For <a> styled as button */
+            color: var(--text-color-light); 
+            text-decoration: none;
+            transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
+            border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
+            position: relative;
         }
 
         .course-navigation .unit-title:hover {
-            background-color: rgba(0,0,0,0.05);
+            background-color: rgba(0,0,0,0.04);
+            color: var(--primary-color);
         }
 
         .course-navigation .unit-title .material-icons {
-            transition: transform var(--transition-speed) ease;
+            transition: transform var(--transition-speed) var(--transition-curve);
+            color: var(--text-color-light);
+        }
+        .course-navigation .unit-title:hover .material-icons {
+            color: var(--primary-color);
         }
         
-        .course-navigation .unit-title.no-lessons { /* Style for direct link unit titles */
-            display: block; /* Make it behave like a link */
+        .course-navigation .unit-title.no-lessons { /* 例如“總結”這種直接連結的 */
+            display: block; 
         }
 
         .course-navigation .unit.expanded .unit-title .material-icons {
@@ -128,187 +175,234 @@
             margin: 0;
             max-height: 0;
             overflow: hidden;
-            transition: max-height var(--transition-speed) ease-in-out;
+            transition: max-height var(--transition-speed) var(--transition-curve);
         }
 
-        /* .course-navigation .unit.expanded .lessons-list {
-           max-height set by JS
-        } */
-
-        .course-navigation .lesson-item { /* Applied to <a> tags now */
+        .course-navigation .lesson-item { /* 應用於 <a> */
             display: block;
-            padding: 10px 16px 10px 32px;
+            padding: 12px 20px 12px 40px; /* 增加左邊 padding 給內容縮進 */
             color: var(--text-color-light);
             text-decoration: none;
             cursor: pointer;
             font-size: 0.9rem;
+            transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease,
+                        border-left-color var(--transition-speed) ease;
+            position: relative; 
+            width: calc(100% - 16px); /* 同 unit-title */
+            margin-left: 8px;
+            border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
         }
-        .course-navigation .unit-title.lesson-item { /* For 'no-lessons' unit titles also acting as nav items */
-             padding: 12px 16px; /* Match unit-title padding */
+        .course-navigation .unit-title.lesson-item { /* for 'no-lessons' items like '總結' */
+             padding: 14px 20px; /* Match unit-title padding */
         }
-
-
+        
         .course-navigation .lesson-item:hover {
-            background-color: rgba(0,0,0,0.05);
+            background-color: rgba(0,0,0,0.04);
+            color: var(--primary-color);
         }
-
-        .course-navigation .lesson-item.active {
-            background-color: var(--primary-color);
-            color: white;
+        
+        /* 新的 Active 狀態：使用左側邊框線條 + 背景色 + 文字顏色 */
+        .course-navigation .lesson-item.active,
+        .course-navigation .unit-title.lesson-item.active {
+            background-color: var(--primary-color-light);
+            color: var(--primary-color);
             font-weight: 500;
         }
+        .course-navigation .lesson-item.active::before,
+        .course-navigation .unit-title.lesson-item.active::before {
+            content: '';
+            position: absolute;
+            left: -8px; /* 移到 unit-title/lesson-item 的 margin-left 區域 */
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 60%; /* 或固定高度，例如 24px */
+            background-color: var(--primary-color);
+            border-radius: var(--border-radius-sm);
+            transition: all var(--transition-speed) var(--transition-curve);
+        }
+        
         .course-navigation .lesson-item.active:hover {
-            background-color: var(--primary-color); /* Keep active color on hover */
+            background-color: var(--primary-color-light); /* Active 狀態下 Hover 保持 */
+            color: var(--primary-color-dark); /* 文字顏色可略深 */
+        }
+         .course-navigation .lesson-item.active:hover::before {
+            background-color: var(--primary-color-dark);
         }
 
 
-        /* --- Main Content --- */
+        /* --- 主內容區 Main Content Area --- */
         .main-content-area {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            background-color: #fff;
-            transition: margin-left var(--transition-speed) ease;
-            width: 100%;
-            height: 100vh;
-            overflow: hidden;
+            background-color: var(--content-bg-color);
+            transition: margin-left var(--transition-speed) var(--transition-curve);
+            width: 100%; /* This helps with transitions when sidebar width changes */
+            min-width: 0; /* Prevent content from overflowing on flex children */
+            height: 100vh; /* Full viewport height */
+            overflow: hidden; /* Main area itself should not scroll, the container inside it does */
         }
 
         .main-header {
             display: flex;
             align-items: center;
-            padding: 0 16px;
+            padding: 0 24px;
             height: var(--header-height);
             border-bottom: 1px solid var(--border-color);
-            background-color: #fff;
-            position: sticky;
+            background-color: rgba(255,255,255,0.85); /* 半透明白色，增加質感 */
+            backdrop-filter: blur(10px) saturate(180%); /* 模糊效果，提升現代感 (iOS Safari like) */
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
+            position: sticky; /* 固定在頂部 */
             top: 0;
             z-index: 900;
-            flex-shrink: 0;
+            flex-shrink: 0; /* 防止頭部在 flex 佈局中被壓縮 */
         }
 
         .current-lesson-title {
             margin: 0;
-            font-size: 1.25rem;
+            font-size: 1.3rem;
             font-weight: 500;
             margin-left: 16px;
+            color: var(--text-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-
-        /* ... (其他CSS規則保持不變) ... */
 
         .content-scroll-container {
             flex-grow: 1;
-            overflow-y: auto;
-            /* 原 padding: 24px; */
-            /* 新 padding: 上下仍然是24px，左右調整為20px (你可以自行調整這個值) */
-            padding: 24px 20px; 
-            /* 如果只想調整左邊，可以這樣： */
-            /* padding: 24px 24px 24px 16px; */ /* 上 右 下 左 */
-            scroll-behavior: smooth;
-            /* 確保沒有會導致內部 section 居中的 flex 或 grid 屬性 */
-            /* display: flex; 和 align-items: center; 應該不在這裡 */
+            overflow-y: auto; /* 內部容器可滾動 */
+            padding: 32px 24px; 
+            scroll-behavior: smooth; /* 平滑滾動效果 */
+        }
+        
+        /* 全局美化滾動條 (部分瀏覽器支援) */
+        .content-scroll-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .content-scroll-container::-webkit-scrollbar-track {
+            background: var(--secondary-color); /* 軌道顏色 */
+            border-radius: 4px;
+        }
+        .content-scroll-container::-webkit-scrollbar-thumb {
+            background: var(--border-color); /* 滑塊顏色 */
+            border-radius: 4px;
+        }
+        .content-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: var(--text-color-light); /* 滑塊懸停顏色 */
         }
 
+        /* --- 卡片式內容區塊 --- */
         .content-scroll-container section[id^="unit-"],
         .content-scroll-container section[id^="lesson-"] {
-            margin-bottom: 40px; 
-            scroll-margin-top: calc(var(--header-height) + 24px);
+            margin-bottom: 32px; 
+            scroll-margin-top: calc(var(--header-height) + 32px); /* 滾動定位的偏移, 考慮header和padding */
             
-            /* 新增：設定內容區塊的最大寬度 */
-            max-width: 920px; /* 你可以調整這個最大寬度值，例如 800px, 960px 等 */
-            
-            /* 由於 section 是塊級元素，在 content-scroll-container 內會默認靠左。
-               如果之前 content-scroll-container 有 align-items: center; 
-               或 section 有 margin: 0 auto; 則需要移除/修改這些來確保靠左。
-               目前結構應該是默認靠左的。
-            */
-            margin-left: 0; /* 明確指定靠左 (通常是默認，但確保一下) */
-            margin-right: auto; /* 讓右邊自動填充剩餘空間，效果也是靠左 */
-            box-sizing: border-box; /* 確保 section 的 padding (如果有的話) 被包含在 max-width 內 */
-            /* 如果 section 內部還有自己的 padding，可以定義在這裡或保持其默認 */
+            max-width: 900px; 
+            margin-left: auto; /* 水平居中 */
+            margin-right: auto;
+
+            /* 可選：為每個section添加輕微卡片感 */
+            /* background-color: var(--content-bg-color); */ /* 若內容背景與頁面背景色不同則啟用 */
+            /* padding: 28px 32px; */ /* 卡片內部padding */
+            /* border-radius: var(--border-radius-lg); */
+            /* box-shadow: var(--card-shadow); */
+            /* border: 1px solid var(--border-color); */ /* 輕微邊框 */
         }
         
-        /* 如果 section 內部的 p, ul, ol 等也需要相對於 section 的邊緣有一些 padding，
-           確保它們的樣式正確，或者 section 本身也可以有內部的 padding。
-           例如，如果上面的 section[...] 直接設 padding: 0 16px; box-sizing: border-box; 
-           那 max-width 就是包含這部分padding的總寬度。
-           現在的設置是讓 section 的背景延伸到 max-width，文字直接在裡面。
-           一般文章的 p, ul 等元素本身就會有 margin，可能不需要 section 的額外 padding。
-           目前 .content-scroll-container section p, ul, ol 的 padding-left: 20px 是針對列表的，這應該沒問題。
-        */
-
-
-        /* ... (其他CSS規則保持不變) ... */
-        
-        /* Titles within the scrollable content */
+        /* 內容標題 */
         .content-scroll-container section h1 { /* For "總結" title */
-            font-size: 2rem;
+            font-size: 2.2rem; 
             font-weight: 700;
             color: var(--primary-color);
-            border-bottom: 2px solid var(--primary-color);
+            /* border-bottom: 3px solid var(--primary-color); */ /* 可選下劃線 */
+            padding-bottom: 12px;
+            margin-bottom: 32px; 
+            text-align: center; /* 總結大標題居中 */
+        }
+
+        .content-scroll-container section h2 { /* Unit title in content / Lesson title */
+            font-size: 1.9rem; 
+            font-weight: 600; 
+            color: var(--text-color);
             padding-bottom: 10px;
-            margin-bottom: 24px;
+            margin-top: 0; 
+            margin-bottom: 24px; 
+            position: relative;
+            /* 可選：給h2一個裝飾性的左邊框線條 */
+            /* border-left: 4px solid var(--primary-color); */
+            /* padding-left: 12px; */
         }
 
-        .content-scroll-container section h2 { /* Unit title within content, or first lesson title */
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--text-color); /* Make distinct from sidebar active, or match primary */
-             /* border-bottom: 1px solid var(--border-color); */
-            padding-bottom: 8px;
-            margin-top: 0; /* For first h2 in a section */
-            margin-bottom: 20px;
-        }
-        /* This is for titles that were in courseData.lessons.title if those become h2 or h3 */
-        .content-scroll-container section h3 { /* Sub-headings within a lesson's content */
-            font-size: 1.4rem;
+        .content-scroll-container section h3 { /* Sub-headings */
+            font-size: 1.5rem; 
             font-weight: 500;
-            margin-top: 28px;
-            margin-bottom: 14px;
+            color: var(--text-color); /* 與h2顏色略作區分或一致 */
+            margin-top: 32px; 
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
         }
 
+        /* 內文排版 */
         .content-scroll-container section p,
         .content-scroll-container section ul,
         .content-scroll-container section ol {
-            line-height: 1.7;
-            margin-bottom: 16px;
+            line-height: 1.8; /* 增加行高以提高可讀性 */
+            margin-bottom: 18px;
             color: var(--text-color);
-            font-size: 1rem;
+            font-size: 1.05rem; /* 略微增大內容字體 */
         }
         .content-scroll-container section ul,
         .content-scroll-container section ol {
-            padding-left: 20px;
+            padding-left: 24px; /* 列表縮進 */
         }
         .content-scroll-container section li {
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
-        /* --- Icon Buttons --- */
+        /* 引用區塊樣式 */
+        .content-scroll-container section blockquote {
+            margin: 24px 0;
+            padding: 16px 24px;
+            border-left: 4px solid var(--primary-color);
+            background-color: var(--primary-color-light);
+            border-radius: var(--border-radius-sm);
+            color: var(--text-color); /* 確保引用文字顏色可讀 */
+        }
+        .content-scroll-container section blockquote p {
+            margin-bottom: 0;
+            /* color: var(--primary-color-dark); */ /* 可選：引用內文字用深主色 */
+            font-size: 1rem;
+        }
+
+        /* --- 圖示按鈕 Icon Buttons --- */
         .icon-button {
             background: none;
             border: none;
-            padding: 8px;
+            padding: 10px; /* 增大點擊區域 */
             cursor: pointer;
             border-radius: 50%;
-            display: flex;
+            display: inline-flex; 
             align-items: center;
             justify-content: center;
+            transition: background-color var(--transition-speed) ease;
+            color: var(--text-color-light); /* 圖示預設顏色繼承自父元素 */
         }
         .icon-button .material-icons {
-            color: var(--text-color-light);
+            /* color: var(--text-color-light); */ /* 顏色可以由 .icon-button 控制 */
+            transition: color var(--transition-speed) ease;
         }
         .icon-button:hover {
             background-color: rgba(0,0,0,0.08);
+            color: var(--primary-color); /* Hover 時圖示變為主色 */
         }
+        /* .icon-button:hover .material-icons { // No need if color is set on .icon-button
+            color: var(--primary-color);
+        } */
 
-        .mobile-only {
-            display: inline-flex;
-        }
-        .desktop-only {
-            display: none;
-        }
-
-        /* --- Chatbase FAB and Popup --- */
+        /* --- Chatbase FAB and Popup (煥新風格) --- */
         .chatbase-fab {
             position: fixed;
             bottom: 24px;
@@ -316,34 +410,38 @@
             width: var(--chat-fab-size);
             height: var(--chat-fab-size);
             background-color: var(--primary-color);
-            color: white;
+            color: var(--text-color-on-primary);
             border: none;
-            border-radius: 50%;
+            border-radius: 50%; 
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 6px 12px rgba(41, 121, 255, 0.3), 0 2px 6px rgba(41, 121, 255, 0.2); /* 主色陰影 */
             cursor: pointer;
             z-index: 1050;
-            transition: transform var(--transition-speed) ease;
+            transition: transform var(--transition-speed) var(--transition-curve), 
+                        box-shadow var(--transition-speed) var(--transition-curve),
+                        background-color var(--transition-speed) var(--transition-curve);
         }
         .chatbase-fab:hover {
-            transform: scale(1.1);
+            transform: scale(1.05) translateY(-2px); /* 懸浮效果 */
+            box-shadow: 0 8px 18px rgba(41, 121, 255, 0.35), 0 4px 8px rgba(41, 121, 255, 0.25);
+            background-color: var(--primary-color-dark);
         }
         .chatbase-fab .material-icons {
-            font-size: 24px;
+            font-size: 26px; 
         }
 
         .chatbase-popup {
             position: fixed;
-            bottom: calc(var(--chat-fab-size) + 32px);
+            bottom: calc(var(--chat-fab-size) + 32px); /* FAB下方，間距12px */
             right: 24px;
             width: var(--chat-popup-width);
             height: var(--chat-popup-height);
             max-height: var(--chat-popup-max-height);
-            background-color: #fff;
-            border-radius: 12px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+            background-color: var(--secondary-color); 
+            border-radius: var(--border-radius-lg); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15), 0 0 0 1px var(--border-color); /* 更細緻的陰影 */
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -351,74 +449,124 @@
             transform: translateY(20px) scale(0.95);
             opacity: 0;
             visibility: hidden;
-            transition: transform 0.3s ease, opacity 0.3s ease, visibility 0s 0.3s;
+            transition: transform var(--transition-speed) var(--transition-curve), 
+                        opacity var(--transition-speed) var(--transition-curve), 
+                        visibility 0s calc(var(--transition-speed) / 1.5); /* 延遲 visibility 消失 */
         }
 
         .chatbase-popup.open {
             transform: translateY(0) scale(1);
             opacity: 1;
             visibility: visible;
-            transition: transform 0.3s ease, opacity 0.3s ease, visibility 0s 0s;
+            transition: transform var(--transition-speed) var(--transition-curve), 
+                        opacity var(--transition-speed) var(--transition-curve), 
+                        visibility 0s 0s; /* 立即顯示 visibility */
         }
 
         .chatbase-popup-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 16px;
-            background-color: var(--secondary-color);
+            padding: 16px 20px; 
+            background-color: var(--secondary-color); 
             border-bottom: 1px solid var(--border-color);
             flex-shrink: 0;
         }
         .chatbase-popup-header span {
             font-weight: 500;
-            font-size: 1rem;
+            font-size: 1.05rem; 
+            color: var(--text-color);
         }
         .chatbase-popup-content {
             flex-grow: 1;
+            background-color: var(--content-bg-color); /* 內嵌 iframe 區域可以使用純白背景 */
+        }
+        .chatbase-popup-content iframe {
+             border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg); /* iframe 底部圓角 */
         }
 
-        /* --- RWD --- */
-        @media (min-width: 768px) {
+
+        /* --- RWD 響應式設計 --- */
+        @media (min-width: 768px) { /* 桌面版樣式 */
             .sidebar {
-                position: relative;
-                left: 0 !important;
-                width: var(--sidebar-width);
+                position: relative; /* 從 fixed 改為 relative */
+                left: 0 !important; /* 覆蓋 fixed 定位的 left */
+                box-shadow: none; /*桌面模式下 sidebar 不需要額外陰影 */
             }
 
             .sidebar.collapsed {
                 width: var(--sidebar-width-collapsed);
-                overflow: hidden;
+                overflow: hidden; /* 確保內容被裁剪 */
             }
-             .main-content-area.sidebar-collapsed {
-                margin-left: var(--sidebar-width-collapsed) !important;
+            .sidebar.collapsed .sidebar-title,
+            .sidebar.collapsed .course-navigation {
+                /* 在折疊時可以選擇隱藏或改變樣式 */
+                 opacity: 0; /* 淡出 */
+                 pointer-events: none; /* 不可交互 */
+                 transition: opacity 0.1s ease; /* 快速隱藏 */
             }
 
-            #close-sidebar-btn.mobile-only {
+             .main-content-area.sidebar-collapsed { /* JS會控制 margin-left */
+                /* margin-left: var(--sidebar-width-collapsed) !important; */
+            }
+
+            #close-sidebar-btn.mobile-only { /* 桌面版隱藏此按鈕 */
                 display: none;
             }
         }
         
-        @media (max-width: 480px) {
+        @media (max-width: 767px) { /* 手機和平板斷點 */
+             .sidebar {
+                /* 確保手機版滑出時有陰影（已在 .sidebar.open 中定義）*/
+            }
+            .content-scroll-container {
+                padding: 24px 16px; 
+            }
+            .content-scroll-container section[id^="unit-"],
+            .content-scroll-container section[id^="lesson-"] {
+                /* padding: 16px 20px; */ /* 可按需調整手機端 section 內 padding */
+            }
+            .current-lesson-title {
+                font-size: 1.15rem;
+                max-width: calc(100vw - 100px); /* 避免標題過長影響menu按鈕 */
+            }
+             .content-scroll-container section h1 { font-size: 1.9rem; }
+             .content-scroll-container section h2 { font-size: 1.6rem; }
+             .content-scroll-container section h3 { font-size: 1.3rem; }
+        }
+
+        @media (max-width: 480px) { /* 更小螢幕的微調 */
             .chatbase-popup {
-                width: calc(100vw - 32px);
-                height: 75%;
-                bottom: 16px;
-                right: 16px;
-                max-height: none;
+                width: calc(100vw - 24px); /* 左右留白12px */
+                height: calc(100% - 80px); /* 預留fab和底部空間 */
+                bottom: 12px;
+                right: 12px;
             }
             .chatbase-fab {
                 bottom: 16px;
                 right: 16px;
             }
-            .content-scroll-container section h1 { font-size: 1.8rem; }
-            .content-scroll-container section h2 { font-size: 1.5rem; }
-            .content-scroll-container section h3 { font-size: 1.2rem; }
+            :root { 
+                --header-height: 60px;
+            }
+            .current-lesson-title {
+                font-size: 1.1rem;
+            }
+             .content-scroll-container section p,
+             .content-scroll-container section ul,
+             .content-scroll-container section ol {
+                font-size: 0.95rem; 
+            }
         }
         
-        @media (min-width: 1024px) {
+        /* 寬螢幕時可以稍微增加側邊欄寬度和內容區寬度 */
+        @media (min-width: 1200px) {
             :root {
                 --sidebar-width: 300px;
+            }
+             .content-scroll-container section[id^="unit-"],
+             .content-scroll-container section[id^="lesson-"] {
+                max-width: 960px; 
             }
         }
 
@@ -429,9 +577,11 @@
         <!-- 側邊欄 -->
         <aside id="sidebar" class="sidebar">
             <div class="sidebar-header">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png" alt="Logo" class="logo">
+                <!-- 若使用圖片Logo, 取消下行註釋並替換圖片路徑 -->
+                <!-- <img src="YOUR_LOGO.svg" alt="Logo" class="logo-img"> -->
+                <span class="logo"></span> <!-- 使用 Material Icon 作為 Logo -->
                 <h2 class="sidebar-title">原子習慣</h2>
-                <button id="close-sidebar-btn" class="icon-button mobile-only" aria-label="關閉側邊欄">
+                <button id="close-sidebar-btn" class="icon-button mobile-only" aria-label="關閉側邊欄" aria-expanded="false">
                     <span class="material-icons">close</span>
                 </button>
             </div>
@@ -443,7 +593,7 @@
         <!-- 主內容區 -->
         <main id="main-content-area" class="main-content-area">
             <header class="main-header">
-                <button id="menu-toggle-btn" class="icon-button" aria-label="切換側邊欄">
+                <button id="menu-toggle-btn" class="icon-button" aria-label="切換側邊欄" aria-expanded="true">
                     <span class="material-icons">menu</span>
                 </button>
                 <h1 id="current-lesson-title" class="current-lesson-title">歡迎！</h1>
@@ -451,13 +601,20 @@
 
             <div id="content-scroll-container" class="content-scroll-container">
                 <!-- 所有課程內容將以<section>形式渲染於此 -->
+                <!-- 範例內容:
+                <section id="lesson-1-1">
+                    <h2>原子習慣的驚人力量</h2>
+                    <p>習慣是自我改善的複利...</p>
+                    <blockquote><p>這是一段引用文字的範例，看看它的新樣式！</p></blockquote>
+                </section>
+                -->
             </div>
         </main>
     </div>
 
     <!-- Chatbase 浮動按鈕 -->
-    <button id="chatbase-toggle-btn" class="chatbase-fab" aria-label="開啟AI助教">
-        <span class="material-icons">chat</span>
+    <button id="chatbase-toggle-btn" class="chatbase-fab" aria-label="開啟AI助教" aria-expanded="false">
+        <span class="material-icons">support_agent</span> <!-- 換個更合適的 AI 助教圖示 -->
     </button>
 
     <!-- Chatbase 彈出視窗 -->
@@ -480,16 +637,17 @@
     </div>
 
     <script>
+    // JavaScript 主要邏輯保持不變，但進行了優化和無障礙性增強
     document.addEventListener('DOMContentLoaded', function () {
         const courseData = [
             {
                 title: "原子習慣威力有多大？",
                 idPrefix: "unit-1", // Used for generating unique IDs
                 lessons: [
-                    { title: "原子習慣的驚人力量", id: "lesson-1-1", content: "<h2>原子習慣的驚人力量</h2><p>習慣是自我改善的複利。如同金錢透過複利加倍，習慣的效果也會在重複的過程中加倍。在任何一天，習慣的影響似乎都很小，但幾個月或幾年下來，它們的影響可能是巨大的。只有回頭看時，好習慣的價值和壞習慣的代價才會變得非常明顯。</p><p>我們常忽略微小的改變，因為它們在當下似乎並不重要。如果你今天省了一點錢，你仍然不是百萬富翁。如果你今天去健身房三次，你的體態可能還是不好。但如果我們每天重複1%的錯誤，日復一日，最終的結果將會非常糟糕。</p><p>關鍵在於，你的習慣軌跡遠比你當前的成果水平重要。如果你想預測自己的人生將走向何方，只需要追蹤微小收穫或損失的曲線。一個每天進步1%的習慣，一年後你會進步將近37倍。相反地，一個每天退步1%的習慣，一年後你會趨近於零。</p><h3>習慣的複利效應</h3><ul><li><strong>正面複利：</strong>生產力、知識、人際關係。</li><li><strong>負面複利：</strong>壓力、負面思考、憤怒。</li></ul><p>突破時刻往往是先前許多行動累積的結果。就像竹子，它花了數年時間在地底下扎根，然後在幾週內長高數十英尺。習慣也是如此，我們努力了很久卻似乎沒有進展，然後突然間，我們就跨越了一個關鍵的門檻，解鎖了新的表現水平。</p>" },
+                    { title: "原子習慣的驚人力量", id: "lesson-1-1", content: "<h2>原子習慣的驚人力量</h2><p>習慣是自我改善的複利。如同金錢透過複利加倍，習慣的效果也會在重複的過程中加倍。在任何一天，習慣的影響似乎都很小，但幾個月或幾年下來，它們的影響可能是巨大的。只有回頭看時，好習慣的價值和壞習慣的代價才會變得非常明顯。</p><p>我們常忽略微小的改變，因為它們在當下似乎並不重要。如果你今天省了一點錢，你仍然不是百萬富翁。如果你今天去健身房三次，你的體態可能還是不好。但如果我們每天重複1%的錯誤，日復一日，最終的結果將會非常糟糕。</p><blockquote><p>微小的改變，長期的複利，造就巨大的差異。</p></blockquote><p>關鍵在於，你的習慣軌跡遠比你當前的成果水平重要。如果你想預測自己的人生將走向何方，只需要追蹤微小收穫或損失的曲線。一個每天進步1%的習慣，一年後你會進步將近37倍。相反地，一個每天退步1%的習慣，一年後你會趨近於零。</p><h3>習慣的複利效應</h3><ul><li><strong>正面複利：</strong>生產力、知識、人際關係。</li><li><strong>負面複利：</strong>壓力、負面思考、憤怒。</li></ul><p>突破時刻往往是先前許多行動累積的結果。就像竹子，它花了數年時間在地底下扎根，然後在幾週內長高數十英尺。習慣也是如此，我們努力了很久卻似乎沒有進展，然後突然間，我們就跨越了一個關鍵的門檻，解鎖了新的表現水平。</p>" },
                     { title: "別管目標，專注於系統", id: "lesson-1-2", content: "<h2>別管目標，專注於系統</h2><p>傳統觀念常教導我們要設定具體、可達成的目標，但《原子習慣》提出了一個反直覺的觀點：目標是關於你想達成的結果，系統則是引導你達到那些結果的過程。如果完全忽略目標，只專注於系統，你仍然會成功。</p><p>為什麼系統優於目標？</p><ol><li><strong>贏家和輸家都有相同的目標：</strong>每個奧運選手都想贏得金牌，每個應徵者都想得到工作。目標本身並不能區分贏家和輸家。</li><li><strong>達成目標只是短暫的改變：</strong>想像你的房間很亂，你設定目標要打掃乾淨。如果你鼓起勁來整理，房間會變乾淨，但如果你不改變造成髒亂的邋遢習慣（系統），很快房間又會亂成一團。你是在治療症狀，而不是解決根本原因。</li><li><strong>目標限制了你的快樂：</strong>「一旦我達成目標，我就會快樂。」這種心態會讓你不斷延遲快樂。而且，目標達成後呢？如果你的動力來自目標，目標實現後你可能頓失方向。</li><li><strong>目標與長期進步互相矛盾：</strong>許多跑者為了一場比賽刻苦訓練數月，比賽結束後就停止訓練。目標達成後，努力的理由消失了。系統化的方法則不然，它本身就包含了持續進步的循環。</li></ol><p>真正的重點不在於任何單一的成就，而是持續改善的循環。最終，是對過程的投入決定了你的進展。愛上過程，成果自然會隨之而來。</p>" },
-                    { title: "改變身分認同", id: "lesson-1-3", content: "<h2>改變身分認同</h2><p>行為改變有三個層次：改變你的成果（目標）、改變你的過程（系統）、改變你的身分認同（信念）。許多人從改變成果開始，但最有效、最持久的改變是從身分認同開始。</p><p>身分認同指的是你對自己是誰的信念。你相信的價值觀、你看待自己與他人的方式。例如：「我是一個健康的人」、「我是一個好學的人」。</p><p>傳統的習慣養成著重於「做什麼」（成果導向），身分認同導向的習慣則著重於「想成為誰」。</p><ul><li><strong>成果導向：</strong>我想減肥（目標），所以我必須運動（過程）。</li><li><strong>身分認同導向：</strong>我想成為一個健康的人。一個健康的人會做什麼？他們會規律運動、健康飲食。</li></ul><p>你的習慣塑造了你的身分認同，你的身分認同也塑造了你的習慣。這是一個雙向道。每個行動都是一張選票，投給你希望成為的那種人。當你每天寫作，你就在強化自己是「作家」的身分認同。當你每天運動，你就在強化自己是「運動員」的身分認同。</p><p>真正的行為改變是身分認同的改變。你可以開始一個習慣，因為它能帶來某種成果，但唯一能讓你堅持下去的理由，是這個習慣成為你身分認同的一部分。任何想要改變習慣的人，真正的問題不是「我想要什麼？」而是「我想成為誰？」</p>" },
-                    { title: "習慣養成的四步驟", id: "lesson-1-4", content: "<h2>習慣養成的四步驟</h2><p>所有習慣的形成都依循著一個反覆的心理學迴路：提示、渴望、回應、獎賞。這個模型是習慣科學的支柱。</p><ol><li><strong>提示 (Cue):</strong> 提示觸發你的大腦啟動某個行為。它是一點點資訊，預示著獎賞。我們的祖先注意的是預示食物、水和性的提示。今天，我們注意的是預示次級獎賞的提示，如金錢、名聲、權力、讚美、認可、愛情、友誼或個人滿足感。</li><li><strong>渴望 (Craving):</strong> 渴望是每個習慣背後的動機力量。沒有渴望，我們就沒有理由行動。你渴望的不是習慣本身，而是它帶來的狀態改變。你不是渴望抽菸，而是渴望抽菸帶來的放鬆感。每個渴望都與改變你內在狀態的期望有關。</li><li><strong>回應 (Response):</strong> 回應是你實際執行的習慣，它可以是想法或行動。回應是否發生，取決於你有多大的動機，以及與行為相關的阻力大小。如果某個行動需要超出你意願的身體或心智努力，你就不會去做。</li><li><strong>獎賞 (Reward):</strong> 獎賞是每個習慣的最終目標。我們追逐獎賞，因為它們有兩個目的：(1) 滿足我們的渴望；(2) 教導我們哪些行動在未來值得記住。大腦是一個獎賞偵測器。當你經歷獎賞時，它會將注意力轉向記住引發獎賞的行動順序。</li></ol><p>如果一個行為在這四個階段中的任何一個都不足，它就不會成為習慣。拿掉提示，習慣根本不會開始。減低渴望，你不會有足夠的動機行動。讓行為變得困難，你無法執行。如果獎賞無法滿足你的慾望，未來你也不會再做一次。沒有前三個步驟，行為不會發生。沒有全部四個步驟，行為不會重複。</p>" }
+                    { title: "改變身分認同", id: "lesson-1-3", content: "<h2>改變身分認同</h2><p>行為改變有三個層次：改變你的成果（目標）、改變你的過程（系統）、改變你的身分認同（信念）。許多人從改變成果開始，但最有效、最持久的改變是從身分認同開始。</p><p>身分認同指的是你對自己是誰的信念。你相信的價值觀、你看待自己與他人的方式。例如：「我是一個健康的人」、「我是一個好學的人」。</p><p>傳統的習慣養成著重於「做什麼」（成果導向），身分認同導向的習慣則著重於「想成為谁」。</p><ul><li><strong>成果導向：</strong>我想減肥（目標），所以我必須運動（過程）。</li><li><strong>身分認同導向：</strong>我想成為一個健康的人。一個健康的人會做什麼？他們會規律運動、健康飲食。</li></ul><p>你的習慣塑造了你的身分認同，你的身分認同也塑造了你的習慣。這是一個雙向道。每個行動都是一張選票，投給你希望成為的那種人。當你每天寫作，你就在強化自己是「作家」的身分認同。當你每天運動，你就在強化自己是「運動員」的身分認同。</p><p>真正的行為改變是身分認同的改變。你可以開始一個習慣，因為它能帶來某種成果，但唯一能讓你堅持下去的理由，是這個習慣成為你身分認同的一部分。任何想要改變習慣的人，真正的問題不是「我想要什麼？」而是「我想成為誰？」</p>" },
+                    { title: "習慣養成的四步驟", id: "lesson-1-4", content: "<h2>習慣養成的四步驟</h2><p>所有習慣的形成都依循著一個反覆的心理學迴路：提示、渴望、回應、獎賞。這個模型是習慣科學的支柱。</p><ol><li><strong>提示 (Cue):</strong> 提示觸發你的大腦啟動某個行為。它是一點點資訊，預示著獎賞。我們的祖先注意的是預示食物、水和性的提示。今天，我們注意的是預示次級獎賞的提示，如金錢、名聲、權力、讚美、認可、愛情、友誼或個人滿足感。</li><li><strong>渴望 (Craving):</strong> 渴望是每個習慣背後的動機力量。沒有渴望，我們就沒有理由行動。你渴望的不是習慣本身，而是它帶來的狀態改變。你不是渴望抽菸，而是渴望抽菸帶來的放鬆感。每個渴望都與改變你內在狀態的期望有關。</li><li><strong>回應 (Response):</strong> 回應是你實際執行的習慣，它可以是想法或行動。回應是否發生，取決于你有多大的動機，以及與行為相關的阻力大小。如果某個行動需要超出你意願的身體或心智努力，你就不會去做。</li><li><strong>獎賞 (Reward):</strong> 獎賞是每個習慣的最終目標。我們追逐獎賞，因為它們有兩個目的：(1) 滿足我們的渴望；(2) 教導我們哪些行動在未來值得記住。大腦是一個獎賞偵測器。當你經歷獎賞時，它會將注意力轉向記住引發獎賞的行動順序。</li></ol><p>如果一個行為在這四個階段中的任何一個都不足，它就不會成為習慣。拿掉提示，習慣根本不會開始。減低渴望，你不會有足夠的動機行動。讓行為變得困難，你無法執行。如果獎賞無法滿足你的慾望，未來你也不會再做一次。沒有前三個步驟，行為不會發生。沒有全部四個步驟，行為不會重複。</p>" }
                 ]
             },
             {
@@ -554,7 +712,7 @@
         const closeChatbasePopupBtn = document.getElementById('close-chatbase-popup-btn');
 
         let activeNavLink = null;
-        const sectionOffsets = [];
+        const sectionOffsets = []; // Cache section offsets for scroll spy
         const mainHeaderElement = document.querySelector('.main-header');
 
 
@@ -568,22 +726,15 @@
                     unitSection.innerHTML = unit.content;
                     contentScrollContainer.appendChild(unitSection);
                 } else if (unit.lessons && unit.lessons.length > 0) {
-                    // Optional: Create a header section for the unit title itself if desired
-                    // const unitHeaderSection = document.createElement('section');
-                    // unitHeaderSection.id = `${unitId}-header`;
-                    // unitHeaderSection.innerHTML = `<h2>${unit.title}</h2>`; // Content might have h2 already
-                    // contentScrollContainer.appendChild(unitHeaderSection);
-
                     unit.lessons.forEach((lesson, lessonIndex) => {
                         const lessonSection = document.createElement('section');
                         lessonSection.id = lesson.id || `${unitId}-lesson-${lessonIndex}`;
-                        // The content for lesson already includes h2 or h3
                         lessonSection.innerHTML = lesson.content;
                         contentScrollContainer.appendChild(lessonSection);
                     });
                 }
             });
-            calculateSectionOffsets();
+            calculateSectionOffsets(); // Calculate offsets after content is rendered
         }
 
         function populateSidebar() {
@@ -608,7 +759,7 @@
                     lessonsList.id = `unit-lessons-${unitIndex}`;
 
                     unit.lessons.forEach((lesson, lessonIndex) => {
-                        const lessonItem = document.createElement('li');
+                        const lessonItem = document.createElement('li'); // Changed to li for semantic list
                         const lessonLink = document.createElement('a');
                         lessonLink.classList.add('lesson-item');
                         lessonLink.textContent = lesson.title;
@@ -618,53 +769,69 @@
                     });
                     unitElement.appendChild(lessonsList);
                 } else if (unit.content) { // For units like "總結" with direct content
-                    const unitLink = document.createElement('a');
-                    unitLink.classList.add('unit-title', 'no-lessons', 'lesson-item');
+                    const unitLink = document.createElement('a'); // It's a link directly
+                    unitLink.classList.add('unit-title', 'no-lessons', 'lesson-item'); // Add 'lesson-item' for active state consistency
                     unitLink.href = `#${unit.id || `${unitIdPrefix}-summary-content`}`;
-                    unitLink.innerHTML = `<span>${unit.title}</span>`;
+                    unitLink.innerHTML = `<span>${unit.title}</span>`; // No dropdown arrow
                     unitElement.appendChild(unitLink);
                 }
                 courseNavigation.appendChild(unitElement);
             });
         }
 
+
         function calculateSectionOffsets() {
-            sectionOffsets.length = 0;
+            sectionOffsets.length = 0; // Clear previous offsets
             const sections = contentScrollContainer.querySelectorAll('section[id]');
             const headerHeight = mainHeaderElement ? mainHeaderElement.offsetHeight : 0;
+            const topPadding = parseFloat(getComputedStyle(contentScrollContainer).paddingTop);
+
             sections.forEach(section => {
-                // offsetTop is relative to the offsetParent. contentScrollContainer is the scrollable one.
-                // So, section.offsetTop relative to contentScrollContainer's top padding edge is fine.
+                // offsetTop is relative to the offsetParent. 
+                // For elements within a scrollable container like contentScrollContainer, 
+                // section.offsetTop should give the distance from the top of contentScrollContainer's content area.
                 sectionOffsets.push({
                     id: section.id,
-                    offsetTop: section.offsetTop,
-                    // Add a little buffer, e.g., for sections slightly above the ideal trigger point.
-                    triggerOffset: section.offsetTop - headerHeight - 20 // 20px buffer
+                    // offsetTop accounts for the scroll container's padding already IF the offsetParent is the scroll container.
+                    // If offsetParent is body, then we might need more complex calculation. Assuming simple structure for now.
+                    offsetTop: section.offsetTop, 
+                    // A point slightly below the sticky header for activation
+                    triggerOffset: section.offsetTop - headerHeight - (topPadding * 0.5) // Adjust buffer as needed
                 });
             });
-            sectionOffsets.sort((a, b) => a.offsetTop - b.offsetTop);
+            sectionOffsets.sort((a, b) => a.offsetTop - b.offsetTop); // Ensure correct order
         }
 
         function updateActiveNavLink(linkElement) {
             if (activeNavLink) {
                 activeNavLink.classList.remove('active');
-                 // If the parent unit was expanded, keep it so, unless the new active link is in a different unit.
-                // This part might need refinement if units auto-collapse.
             }
             if (linkElement) {
                 linkElement.classList.add('active');
                 activeNavLink = linkElement;
 
-                // Ensure parent unit is expanded if this link is in a collapsed list
                 const parentUnit = linkElement.closest('.unit');
                 if (parentUnit) {
                     const lessonsList = parentUnit.querySelector('.lessons-list');
+                    const unitTitleBtn = parentUnit.querySelector('.unit-title:not(.no-lessons)');
+                    
                     if (lessonsList && !parentUnit.classList.contains('expanded')) {
-                        parentUnit.classList.add('expanded');
-                        lessonsList.style.maxHeight = lessonsList.scrollHeight + "px";
-                        const unitTitleBtn = parentUnit.querySelector('.unit-title');
-                        if (unitTitleBtn) unitTitleBtn.setAttribute('aria-expanded', 'true');
+                         parentUnit.classList.add('expanded');
+                         lessonsList.style.maxHeight = lessonsList.scrollHeight + "px";
+                         if (unitTitleBtn) unitTitleBtn.setAttribute('aria-expanded', 'true');
                     }
+                    
+                    // Scroll active link into view in sidebar (if needed)
+                    // Wait for any transitions to finish, then check visibility.
+                    setTimeout(() => {
+                        if (!sidebar.classList.contains("collapsed") && sidebar.offsetWidth > 0) { // only scroll if sidebar is actually visible and not collapsed to 0
+                            const sidebarRect = sidebar.getBoundingClientRect();
+                            const linkRect = linkElement.getBoundingClientRect();
+                            if (linkRect.bottom > sidebarRect.bottom || linkRect.top < sidebarRect.top) {
+                                linkElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+                            }
+                        }
+                    }, parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--transition-speed').replace('s',''))*1000 + 50);
                 }
             }
         }
@@ -673,23 +840,27 @@
         contentScrollContainer.addEventListener('scroll', function() {
             clearTimeout(scrollTimeout);
             scrollTimeout = setTimeout(() => {
+                if (sectionOffsets.length === 0) calculateSectionOffsets(); // Recalculate if empty (e.g. dynamic content load)
+
                 let currentSectionId = null;
-                // scrollTop is the amount scrolled from the top of contentScrollContainer
                 const scrollPosition = contentScrollContainer.scrollTop;
-                // Header height is relative to the viewport if sticky, or mainContentArea
-                // Here we want the trigger point for activation slightly below the actual header in the viewport
-                const activationPoint = scrollPosition + (mainHeaderElement.offsetHeight * 0.3); // Activate when 30% of header is passed or section is higher
+                // Adjust activation point: section's top should be visible, typically a bit below the sticky header
+                const activationThreshold = mainHeaderElement.offsetHeight * 0.5; // Activate when section top passes 50% of header height
 
                 for (let i = sectionOffsets.length - 1; i >= 0; i--) {
-                     // section.offsetTop is relative to the top of the contentScrollContainer
-                    if (sectionOffsets[i].offsetTop <= activationPoint + 20 ) { // Add some leeway
+                    // section.offsetTop is relative to contentScrollContainer's top padding edge
+                    if (sectionOffsets[i].offsetTop <= scrollPosition + activationThreshold + 5) { // Add a small 5px buffer
                         currentSectionId = sectionOffsets[i].id;
                         break;
                     }
                 }
 
+                // If scrolled all the way to the top, and no section met the criteria, default to the first.
                 if (!currentSectionId && sectionOffsets.length > 0 && scrollPosition < sectionOffsets[0].offsetTop) {
-                    currentSectionId = sectionOffsets[0].id; // Default to first if scrolled above all
+                     // Only set to first if scroll is near the top, otherwise it means user is between sections higher up
+                    if (scrollPosition < sectionOffsets[0].offsetTop - activationThreshold) {
+                         currentSectionId = sectionOffsets[0].id;
+                    }
                 }
 
 
@@ -702,26 +873,43 @@
                         const sectionElement = document.getElementById(currentSectionId);
                         if (sectionElement) {
                             const firstHeading = sectionElement.querySelector('h1, h2, h3, h4');
-                             // Use link text if no heading found or for consistency, or use lesson title from data
-                            const unitIndex = correspondingLink.closest('.unit') ? Array.from(courseNavigation.children).indexOf(correspondingLink.closest('.unit')) : -1;
-                            let titleToSet = correspondingLink.textContent.trim();
-                             if(firstHeading){ // Prefer heading in content
-                                titleToSet = firstHeading.textContent.trim();
+                            let titleToSet = correspondingLink.textContent.trim(); // Default to link text
+                            if(firstHeading){ 
+                                titleToSet = firstHeading.textContent.trim(); // Prefer heading from content
                             }
                             currentLessonTitleElement.textContent = titleToSet;
                         }
                     }
+                } else if (sectionOffsets.length > 0 && scrollPosition + contentScrollContainer.clientHeight >= contentScrollContainer.scrollHeight - 5) {
+                    // If scrolled to the very bottom, activate the last section
+                    currentSectionId = sectionOffsets[sectionOffsets.length - 1].id;
+                     const correspondingLink = courseNavigation.querySelector(`a[href="#${currentSectionId}"]`);
+                     if (correspondingLink && !correspondingLink.classList.contains('active')) {
+                         updateActiveNavLink(correspondingLink);
+                         // update title too
+                          const sectionElement = document.getElementById(currentSectionId);
+                           if (sectionElement) {
+                                const firstHeading = sectionElement.querySelector('h1, h2, h3, h4');
+                                let titleToSet = correspondingLink.textContent.trim();
+                                if(firstHeading){ titleToSet = firstHeading.textContent.trim(); }
+                                currentLessonTitleElement.textContent = titleToSet;
+                            }
+                     }
                 }
-            }, 50); // Reduced debounce for snappier response
+
+
+            }, 60); // Debounce time for scroll event
         });
 
         courseNavigation.addEventListener('click', function(event) {
             const target = event.target;
+            // Check if the click is on an expandable unit title (button)
             const unitTitleButton = target.closest('.unit-title:not(.no-lessons)');
-            const lessonLink = target.closest('.lesson-item');
+            // Check if the click is on a lesson item link (<a> tag)
+            const lessonLink = target.closest('a.lesson-item');
 
-            if (unitTitleButton && !target.closest('a')) { // If it's a button for expansion
-                event.preventDefault(); // Prevent any default if it was an <a> styled as button mistakenly
+            if (unitTitleButton && !lessonLink) { // Clicked on the unit expander, not a direct link unit-title
+                event.preventDefault(); // Prevent any default button action if it's a button
                 const unitElement = unitTitleButton.closest('.unit');
                 const lessonsList = unitElement.querySelector('.lessons-list');
                 if (lessonsList) {
@@ -731,25 +919,23 @@
                 }
             }
             
-            if (lessonLink && lessonLink.tagName === 'A' && lessonLink.getAttribute('href').startsWith('#')) {
+            if (lessonLink && lessonLink.getAttribute('href').startsWith('#')) { // Clicked on a lesson link or a "summary" like unit link
                 event.preventDefault();
                 const targetId = lessonLink.getAttribute('href').substring(1);
                 const targetSection = document.getElementById(targetId);
 
                 if (targetSection) {
-                    // contentScrollContainer.style.scrollBehavior = 'auto'; // Temporarily disable for immediate jump
-                    targetSection.scrollIntoView({ behavior: 'smooth' }); // CSS handles fixed header offset with scroll-margin-top
-                    // setTimeout(() => { contentScrollContainer.style.scrollBehavior = 'smooth'; }, 0);
+                    targetSection.scrollIntoView({ behavior: 'smooth' }); // Smooth scroll
+                    // Scroll spy will handle active state and title update after scroll,
+                    // but for immediate feedback:
+                    updateActiveNavLink(lessonLink); 
+                    currentLessonTitleElement.textContent = lessonLink.querySelector('span') ? lessonLink.querySelector('span').textContent.trim() : lessonLink.textContent.trim();
 
-                    // updateActiveNavLink(lessonLink); // Scroll spy will handle this, but can do it immediately
-                    // Manually trigger scroll event can also work but might be less direct
-                    // contentScrollContainer.dispatchEvent(new Event('scroll')); // Update title & active based on new pos
-                     // For instant title update:
-                    const titleInLink = lessonLink.textContent.trim();
-                    currentLessonTitleElement.textContent = titleInLink; // Update immediately
 
                     if (window.innerWidth < 768 && sidebar.classList.contains('open')) {
                         sidebar.classList.remove('open');
+                        menuToggleBtn.setAttribute('aria-expanded', 'false');
+                        closeSidebarBtn.setAttribute('aria-expanded', 'false'); // also update close button
                     }
                 }
             }
@@ -758,71 +944,92 @@
         menuToggleBtn.addEventListener('click', function() {
             const isMobile = window.innerWidth < 768;
             if (isMobile) {
-                sidebar.classList.toggle('open');
-            } else {
+                const isOpen = sidebar.classList.toggle('open');
+                menuToggleBtn.setAttribute('aria-expanded', isOpen.toString());
+                closeSidebarBtn.setAttribute('aria-expanded', isOpen.toString());
+            } else { // Desktop
                 sidebar.classList.toggle('collapsed');
-                mainContentArea.classList.toggle('sidebar-collapsed');
-                const newMarginLeft = sidebar.classList.contains('collapsed') ?
+                // mainContentArea.classList.toggle('sidebar-collapsed'); // JS direct margin set is more robust
+                const isCollapsed = sidebar.classList.contains('collapsed');
+                menuToggleBtn.setAttribute('aria-expanded', (!isCollapsed).toString());
+
+                const newMarginLeft = isCollapsed ?
                     getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width-collapsed') :
                     getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width');
                 mainContentArea.style.marginLeft = newMarginLeft;
             }
-            // Recalculate offsets after sidebar transition finishes
+            // Recalculate offsets after sidebar transition might change layout
             setTimeout(calculateSectionOffsets, parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--transition-speed').replace('s',''))*1000 + 50);
         });
 
-        closeSidebarBtn.addEventListener('click', function() {
-            if (sidebar.classList.contains('open')) sidebar.classList.remove('open');
-        });
-
-        chatbaseToggleBtn.addEventListener('click', function() {
-            chatbasePopup.classList.toggle('open');
-            if(chatbasePopup.classList.contains('open')) {
-                chatbaseToggleBtn.setAttribute('aria-expanded', 'true');
-            } else {
-                 chatbaseToggleBtn.setAttribute('aria-expanded', 'false');
+        closeSidebarBtn.addEventListener('click', function() { // Mobile only close button
+            if (sidebar.classList.contains('open')) {
+                 sidebar.classList.remove('open');
+                 menuToggleBtn.setAttribute('aria-expanded', 'false');
+                 closeSidebarBtn.setAttribute('aria-expanded', 'false');
             }
+        });
+        
+        chatbaseToggleBtn.addEventListener('click', function() {
+            const isOpen = chatbasePopup.classList.toggle('open');
+            chatbaseToggleBtn.setAttribute('aria-expanded', isOpen.toString());
+            // Focus iframe or input inside if possible when opened for accessibility (advanced)
         });
         closeChatbasePopupBtn.addEventListener('click', function() {
             chatbasePopup.classList.remove('open');
-             chatbaseToggleBtn.setAttribute('aria-expanded', 'false');
+            chatbaseToggleBtn.setAttribute('aria-expanded', 'false');
         });
 
+        // Handle window resize
         let resizeTimeout;
         window.addEventListener('resize', function() {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(() => {
                 const isMobile = window.innerWidth < 768;
                 if (isMobile) {
-                    mainContentArea.style.marginLeft = '0px'; // Sidebar overlays
-                    sidebar.classList.remove('collapsed'); // Remove desktop collapsed state
-                } else {
-                    sidebar.classList.remove('open'); // Remove mobile open state
+                    mainContentArea.style.marginLeft = '0px'; // Sidebar overlays on mobile
+                    sidebar.classList.remove('collapsed'); // Remove desktop collapsed state if present
+                    // Preserve 'open' state if it was already open on mobile, update ARIA
+                    menuToggleBtn.setAttribute('aria-expanded', sidebar.classList.contains('open').toString());
+                    closeSidebarBtn.setAttribute('aria-expanded', sidebar.classList.contains('open').toString());
+
+                } else { // Desktop
+                    if (sidebar.classList.contains('open')) { // If it was open (mobile state)
+                        sidebar.classList.remove('open');
+                        // sidebar.classList.add('collapsed'); // Default to collapsed or not collapsed based on preference
+                    }
+                    // Apply desktop margin based on current collapsed state
                     const currentMargin = sidebar.classList.contains('collapsed') ?
                         getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width-collapsed') :
                         getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width');
                     mainContentArea.style.marginLeft = currentMargin;
+                    menuToggleBtn.setAttribute('aria-expanded', (!sidebar.classList.contains('collapsed')).toString());
                 }
-                calculateSectionOffsets();
-                contentScrollContainer.dispatchEvent(new Event('scroll')); // Trigger scroll spy
-            }, 100);
+                calculateSectionOffsets(); // Recalculate for responsive changes
+                // Trigger scroll event to update active link based on new layout
+                contentScrollContainer.dispatchEvent(new Event('scroll')); 
+            }, 150);
         });
 
         // --- INITIALIZATION ---
-        renderAllContent(); // Creates sections in HTML
-        populateSidebar();  // Creates nav links
+        renderAllContent(); 
+        populateSidebar();  
 
-        // Set initial main content margin
-        if (window.innerWidth >= 768) {
-            const initialMargin = sidebar.classList.contains('collapsed') ?
+        // Set initial main content margin and ARIA states
+        if (window.innerWidth >= 768) { // Desktop
+            const isInitiallyCollapsed = sidebar.classList.contains('collapsed'); // Check if a "collapsed" class is there by default
+            const initialMargin = isInitiallyCollapsed ?
                 getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width-collapsed') :
                 getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width');
             mainContentArea.style.marginLeft = initialMargin;
-        } else {
+            menuToggleBtn.setAttribute('aria-expanded', (!isInitiallyCollapsed).toString());
+        } else { // Mobile
             mainContentArea.style.marginLeft = '0px';
+            menuToggleBtn.setAttribute('aria-expanded', 'false'); // Initially closed on mobile
+            closeSidebarBtn.setAttribute('aria-expanded', 'false');
         }
         
-        // Set initial active link and title (if page loads with a hash or at top)
+        // Handle initial hash for deep linking
         let initialTargetId = window.location.hash.substring(1);
         let initialLinkToActivate = null;
 
@@ -830,35 +1037,45 @@
             initialLinkToActivate = courseNavigation.querySelector(`a[href="#${initialTargetId}"]`);
             const targetSection = document.getElementById(initialTargetId);
             if (targetSection) {
-                // Use timeout to allow DOM to settle before scrolling
-                setTimeout(() => targetSection.scrollIntoView(), 0);
+                // Use timeout to allow DOM to settle before scrolling, esp. images or complex content
+                setTimeout(() => targetSection.scrollIntoView(), 100); 
             }
         }
         
-        if (!initialLinkToActivate && courseData.length > 0) { // Default to first item if no hash
+        // Default to first item if no hash or invalid hash
+        if (!initialLinkToActivate && courseData.length > 0) {
             if (courseData[0].lessons && courseData[0].lessons.length > 0) {
                  initialTargetId = courseData[0].lessons[0].id || `${courseData[0].idPrefix || 'unit-0'}-lesson-0`;
-            } else if (courseData[0].content) { // Summary like unit
+            } else if (courseData[0].content) { // For summary-like first unit
                 initialTargetId = courseData[0].id || `${courseData[0].idPrefix || 'unit-0'}-summary-content`;
             }
             if (initialTargetId) {
                 initialLinkToActivate = courseNavigation.querySelector(`a[href="#${initialTargetId}"]`);
+                 if (!window.location.hash && initialLinkToActivate) { // Scroll to first item if no hash given
+                     const firstSection = document.getElementById(initialTargetId);
+                     if(firstSection) setTimeout(() => firstSection.scrollIntoView(),100);
+                 }
             }
         }
 
+        // Activate link and set title
         if (initialLinkToActivate) {
-             updateActiveNavLink(initialLinkToActivate);
+            updateActiveNavLink(initialLinkToActivate); // This will also expand parent unit
             const linkedSection = document.getElementById(initialTargetId);
             if (linkedSection) {
                 const firstHeading = linkedSection.querySelector('h1, h2, h3, h4');
-                currentLessonTitleElement.textContent = firstHeading ? firstHeading.textContent.trim() : initialLinkToActivate.textContent.trim();
+                currentLessonTitleElement.textContent = firstHeading ? firstHeading.textContent.trim() : (initialLinkToActivate.querySelector('span')? initialLinkToActivate.querySelector('span').textContent.trim() : initialLinkToActivate.textContent.trim());
             }
-        } else { // Fallback title
-             currentLessonTitleElement.textContent = "歡迎！";
+        } else { 
+             currentLessonTitleElement.textContent = "歡迎！"; // Fallback title
         }
         
-        // Final check for initial scroll position for scroll spy
-        contentScrollContainer.dispatchEvent(new Event('scroll'));
+        // Final call to calculate offsets and trigger scroll spy after all setup.
+        // Using a timeout ensures all dynamic rendering and initial scrolls are processed.
+        setTimeout(() => {
+            calculateSectionOffsets();
+            contentScrollContainer.dispatchEvent(new Event('scroll'));
+        }, 200); 
     });
     </script>
 </body>
